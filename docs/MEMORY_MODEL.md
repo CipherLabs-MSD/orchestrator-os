@@ -2,25 +2,26 @@
 
 ## 1. Principles
 
-1. **Point, don't copy.** Memory indexes and summarizes authoritative artifacts: commits,
-   PRs, ADRs, test results and specs. It does not duplicate them. A copy goes stale.
+1. **Point, don't copy.** Memory indexes and summarizes authoritative artifacts: change history,
+   reviews, ADRs, check results and specs (software: commits, PRs, test results). It does not duplicate them. A copy goes stale.
    A pointer can be checked.
-2. **Git is the backbone.** Memory files are versioned with the project, so
-   `git log -p memory/` is the history of what the system believed and when.
+2. **Version history is the backbone.** Memory is versioned with the project's `ProjectStore`,
+   so its history is the history of what the system believed and when (software binding:
+   `git log -p memory/`).
 3. **Every entry is attributable.** Who or what wrote it, when, and on what evidence.
 4. **Memory is not a transcript.** Only information that changes future behaviour
    is kept.
-5. **Freshness is explicit.** Volatile state carries an `as_of` (commit SHA and date).
-   The Observer treats state older than the current HEAD as possibly stale.
+5. **Freshness is explicit.** Volatile state carries an `as_of` (artifact version and date;
+   software: commit SHA). The Observer treats state older than the current version as possibly stale.
 
 ## 2. Sources of truth, in order of authority
 
 | Rank | Source | Example | Memory's relationship |
 |---|---|---|---|
-| 1 | Code + tests at a commit | `main@abc123` | Memory points to it |
-| 2 | Verified evidence | test logs, build output, gate verdicts | Memory references evidence IDs |
+| 1 | Canonical content at an artifact version | software: code + tests at `main@abc123` | Memory points to it |
+| 2 | Verified evidence | gate verdicts and their evidence (software: test logs, build output) | Memory references evidence IDs |
 | 3 | Accepted ADRs | `docs/adr/ADR-0003-*.md` | Memory lists and links them |
-| 4 | Git history / PRs | commit messages, review threads | Memory cites SHAs and PR numbers |
+| 4 | Change history and reviews | software: commit messages, PR threads | Memory cites change and review IDs (software: SHAs, PR numbers) |
 | 5 | Project memory files | `PROJECT_STATE.md`, `LEARNINGS.md`, … | Summaries and indexes **derived** from 1–4 |
 | 6 | Agent self-reports | "I fixed the bug" | **Never authoritative.** Input to verification only. |
 
@@ -30,7 +31,10 @@ entry is a defect to fix.
 ## 3. Files (per project)
 
 Each managed project gets this structure. This repo dogfoods it in [`memory/`](../memory/).
-Managed projects keep it at `.oos/memory/` (see OQ-002).
+Managed projects keep it in their `ProjectStore` (repository-backed projects: `.oos/memory/`, see OQ-002).
+Domain packages may add **memory record types** (`memory_record_types` in the manifest), for
+example a finance hypothesis journal or a data-source provenance log. The six files below are
+the kernel minimum in every domain.
 
 | File | Purpose | Write policy | Volatility |
 |---|---|---|---|
@@ -47,7 +51,7 @@ Each entry in `LEARNINGS.md`, `FAILED_APPROACHES.md` and `OPEN_QUESTIONS.md` is 
 section with a small metadata line, so it reads well for humans and parses for machines:
 
 ```markdown
-### LRN-0007 — Windows test runner needs serial mode
+### LRN-0007 — Windows test runner needs serial mode (software example)
 - **Evidence:** EVD-0123 (CI log), commit 4f2a9c1
 - **Scope:** project · **Confidence:** high · **Learned:** 2026-10-01 · **Status:** active
 - **Applies to capabilities:** testing, devops

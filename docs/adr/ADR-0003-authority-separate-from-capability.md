@@ -1,6 +1,6 @@
 # ADR-0003 — Authority separate from capability
 
-- **Status:** accepted
+- **Status:** accepted; amended by ADR-0006 (PROHIBITED tier; every tool action maps to an action class)
 - **Date:** 2026-10-01
 - **Decision level:** D3
 - **Decided by:** orchestrator (founding architect, OOS-0001)

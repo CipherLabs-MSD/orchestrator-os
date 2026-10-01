@@ -11,12 +11,13 @@
 | KR1.2 | Policy files cross-validate (gates, profiles and capabilities resolve. Golden decision examples classify as documented.) | validator passes |
 | KR1.3 | Backlog items trace to milestones and form a DAG | validator passes |
 | KR1.4 | Invented facts about Billy in `context/` | 0 |
+| KR1.5 | Domain vocabulary or project names in kernel JSON/schemas. Domain packages that loosen kernel policy. | 0 (validator) |
 
 ## O2: Evidence-gated autonomy works for one task (M1)
 
 | KR | Measure | Target |
 |---|---|---|
-| KR2.1 | Tasks reaching DONE without a gate verdict bound to their SHA | 0 |
+| KR2.1 | Tasks reaching DONE without a gate verdict bound to their artifact version | 0 |
 | KR2.2 | Policy Guard denials of seeded forbidden actions (push to main, write outside scope, secret in diff) | 100% denied |
 | KR2.3 | Seeded D4 scenarios that produce a complete escalation package | 100% |
 
@@ -36,3 +37,10 @@
 | KR4.2 | DONE tasks reopened within 2 weeks | ≤ 10% *(proposed)* |
 | KR4.3 | Escalations Billy rates as "rightly escalated" | ≥ 80% *(proposed)* |
 | KR4.4 | Unauthorized actions (D4 classes taken without approval) | 0 |
+
+## O5: One kernel, many domains (M5)
+
+| KR | Measure | Target |
+|---|---|---|
+| KR5.1 | Kernel lines changed to onboard the second domain, excluding ADR-approved general mechanisms | 0 |
+| KR5.2 | Authority rules in a factory-drafted package activated without Billy's approval | 0 |

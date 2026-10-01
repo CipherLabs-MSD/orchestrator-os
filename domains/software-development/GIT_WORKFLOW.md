@@ -1,6 +1,13 @@
-# Git Workflow: transactional safety and historical memory
+# Git Workflow: software-development workspace binding
 
-Git provides two things for Orchestrator OS:
+> **Domain:** software-development. This is how the kernel interfaces in
+> [ARCHITECTURE §1.2](../../docs/ARCHITECTURE.md#12-kernel-interfaces-bound-per-domain) bind to git:
+> `ProjectStore` = repository · `Workspace` = branch + worktree · `ChangeSet` = commits on a
+> task branch · `ArtifactVersion` = commit SHA · `Integration` = reviewed merge to a protected
+> branch under the kernel integration authority. Other domains bind these interfaces differently.
+> The Orchestrator OS repository itself follows this binding.
+
+Git provides two things for software projects (including OOS itself):
 
 1. **Transactions.** Every autonomous change is isolated, reviewable and revertible.
 2. **History.** Commits, PRs and ADRs are the durable record of what was done and why.
@@ -9,7 +16,7 @@ Git provides two things for Orchestrator OS:
 
 | Branch | Purpose | Who writes |
 |---|---|---|
-| `main` | canonical, **protected** | merge via reviewed PR only. Billy is the default merge authority ([DECISION_ENGINE §6](DECISION_ENGINE.md#6-integration-authority-is-separate-from-decision-authority)) |
+| `main` | canonical, **protected** | merge via reviewed PR only. Billy is the default merge authority ([DECISION_ENGINE §6](../../docs/DECISION_ENGINE.md#6-integration-authority-is-separate-from-decision-authority)) |
 | `oos-NNNN/<slug>` | work for one backlog item (this repo) | agents/humans |
 | `task/<task-id>/<slug>` | one orchestrated task in a managed project | one agent run (lease-protected) |
 | `integrate/<milestone-or-epic>` | optional staging of several verified task branches before a PR to `main` | orchestrator |

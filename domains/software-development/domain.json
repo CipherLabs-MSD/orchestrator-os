@@ -1,0 +1,23 @@
+{
+  "id": "software-development",
+  "name": "Software Development",
+  "version": "0.1.0",
+  "kernel_compat": "0.2",
+  "status": "draft",
+  "operational": true,
+  "description": "Domain package for building and maintaining software. First domain used by Orchestrator OS (including for OOS itself).",
+  "components": {
+    "capabilities": "capabilities.json",
+    "policy": "policy.json",
+    "verification": "verification.json",
+    "context_routing": "context_routing.json",
+    "workspace_binding": "GIT_WORKFLOW.md"
+  },
+  "workspace_binding": {
+    "kind": "git",
+    "summary": "Project store = git repository; workspace = branch + worktree; change set = commits on a task branch; integration = reviewed merge to a protected branch; artifact version = commit SHA."
+  },
+  "tools_declared": ["git", "test_runner", "build_tool", "static_analyzer", "package_manager"],
+  "memory_record_types": [],
+  "escalation_rules": "Kernel defaults; integration to protected branches follows kernel integration_authority."
+}

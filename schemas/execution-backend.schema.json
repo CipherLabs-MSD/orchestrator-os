@@ -9,9 +9,11 @@
   "properties": {
     "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
     "vendor": { "type": "string" },
-    "kind": { "type": "string", "enum": ["cli_agent", "api_model", "local_model", "human"] },
+    "kind": { "type": "string", "enum": ["cli_agent", "agent_sdk", "api_model", "local_model", "human"] },
     "status": { "type": "string", "enum": ["declared", "integrated", "deprecated"] },
-    "strengths": { "type": "array", "items": { "type": "string" }, "description": "Capability ids; evidence-based, updated from outcomes." },
+    "strengths": { "type": "array", "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9_]*$" }, "description": "Domain-qualified capability ids '<domain>/<capability>'; evidence-based, updated from outcomes." },
+    "latency": { "type": "string", "enum": ["low", "medium", "high", "unknown"] },
+    "reliability": { "type": ["string", "null"], "description": "Pointer to outcome evidence (per domain/capability/task type); null until measured." },
     "context_window_tokens": { "type": ["integer", "null"], "minimum": 0 },
     "supports": {
       "type": "object",
@@ -22,7 +24,7 @@
         "shell": { "type": "boolean" },
         "web": { "type": "boolean" },
         "vision": { "type": "boolean" },
-        "worktree": { "type": "boolean" },
+        "isolated_workspace": { "type": "boolean", "description": "Can run inside an isolated Workspace provided by the domain workspace binding." },
         "headless": { "type": "boolean" }
       }
     },

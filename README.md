@@ -23,19 +23,24 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 
 ## Core principles
 
-1. **Four separate knowledge layers.** These are user context, project truth, general
+0. **Domain-specialized orchestration.** One domain-agnostic kernel. Specialized
+   orchestrators (software development, finance, game development, research, …) are
+   *configured* from it through domain packages and profiles, never forked
+   ([ARCHITECTURE §1](docs/ARCHITECTURE.md#1-core-architectural-principle-domain-specialized-orchestration)).
+1. **Separate knowledge layers.** These are user context, domain context, project truth, general
    knowledge, and orchestrator state. They are never merged into one prompt.
    "Billy likes X" is evidence for a decision. It is not automatically a requirement.
 2. **Right context, not maximum context.** A Context Router builds the smallest
    useful context package for each agent.
 3. **Authority is separate from capability.** Being able to do something does not mean
-   being allowed to do it. The decision levels are D1–D4.
+   being allowed to do it. The decision levels are D1–D4, plus PROHIBITED.
 4. **Evidence-gated completion.** A task does not become DONE because an agent says
    it is done.
-5. **Git is the transaction log.** Work happens on isolated branches or worktrees, in small
-   commits and reviewable diffs. Nothing reaches the protected branch autonomously.
-6. **Model independence.** Execution backends (Claude Code, Codex, future
-   systems) sit behind one contract.
+5. **Transactional, revertible change.** Work happens in isolated workspaces, as small
+   reviewable change sets. Nothing reaches canonical state autonomously. For software,
+   the binding is git: branches, worktrees and commits.
+6. **Model independence.** Execution backends (Claude Code, Claude Agent SDK, Claude API,
+   Codex, future systems) sit behind one contract and are chosen per task.
 7. **Project-agnostic core.** Pilot projects (first: Demon Codex) never leak
    their specifics into the core.
 
@@ -48,7 +53,10 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 | [`project/`](project/) | Milestones, OKRs, and the backlog (`OOS-NNNN`) |
 | [`context/`](context/) | **User context** layer (Billy). Placeholders only until a curated import |
 | [`memory/`](memory/) | **Project memory** for Orchestrator OS itself (the project dogfoods its own model) |
-| [`orchestration/`](orchestration/) | Machine-readable policy and registries: decision policy, capabilities, backends, gates, routing |
+| [`orchestration/kernel/`](orchestration/kernel/) | **Kernel** policy: decision authority, verification framework, context-routing mechanism |
+| [`orchestration/profiles/`](orchestration/profiles/) | Orchestrator profiles: kernel + domain packages = a specialized orchestrator |
+| [`orchestration/backends.json`](orchestration/backends.json) | Execution backend (agent provider) registry |
+| [`domains/`](domains/) | **Domain packages**: `software-development` (draft) and `finance` (illustrative only) |
 | [`schemas/`](schemas/) | JSON Schemas for every durable record type |
 | [`tools/`](tools/) | `validate.py`, a stdlib-only consistency checker |
 | [`tests/`](tests/) | Tests for the validator and the foundation artifacts |
@@ -63,6 +71,7 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 ## Validate
 
 ```sh
-python tools/validate.py          # structural + cross-reference checks
+python tools/validate.py          # structure, cross-references, tighten-only composition, kernel purity, links
 python -m unittest discover tests # test suite (stdlib only, Python ≥ 3.10)
+python tools/mutation_check.py    # plants known defects in a temp copy; every one must be caught
 ```

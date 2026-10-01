@@ -1,0 +1,67 @@
+{
+  "version": "0.2.0",
+  "description": "KERNEL verification framework: domain-independent gates and evidence base types. Domain packages add gates, specialized evidence types (each extending a base type) and task-type requirements. Human-readable source: docs/VERIFICATION.md.",
+  "evidence_base_types": {
+    "check_result": "an executed check with a pass/fail outcome (procedure, exit status, log)",
+    "artifact": "a produced artifact plus what it should show (image, report, dataset)",
+    "measurement": "a metric with baseline and threshold",
+    "review": "an independent reviewer's findings and verdict",
+    "human_acceptance": "Billy's verdict",
+    "external": "third-party confirmation; untrusted by default",
+    "scope_inspection": "what changed versus the declared resource scope",
+    "observation": "a recorded observation of system or world state, with source and time"
+  },
+  "gates": [
+    {
+      "id": "G-SCOPE",
+      "name": "Scope and hygiene",
+      "passes_when": "Changes touch only the declared resource scope; no secrets exposed; no protected resources changed.",
+      "evidence_types": [
+        "scope_inspection"
+      ],
+      "implicit": true,
+      "removal_level": "D4"
+    },
+    {
+      "id": "G-REVIEW",
+      "name": "Independent review",
+      "passes_when": "Independent review stance approves; findings addressed or waived with log.",
+      "evidence_types": [
+        "review"
+      ],
+      "removal_level": "D3"
+    },
+    {
+      "id": "G-HUMAN",
+      "name": "Human acceptance",
+      "passes_when": "Billy accepts.",
+      "evidence_types": [
+        "human_acceptance"
+      ],
+      "removal_level": "D4"
+    },
+    {
+      "id": "G-DOCS",
+      "name": "Documents and artifacts",
+      "passes_when": "Artifact validators pass; internal references resolve; review confirms the content addresses the task.",
+      "evidence_types": [
+        "check_result",
+        "review"
+      ],
+      "removal_level": "D3"
+    }
+  ],
+  "task_type_gates": {
+    "documentation": [
+      "G-DOCS"
+    ],
+    "design": [
+      "G-DOCS",
+      "G-REVIEW"
+    ],
+    "spike": [],
+    "outcome_validation": [
+      "G-HUMAN"
+    ]
+  }
+}

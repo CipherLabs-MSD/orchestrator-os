@@ -1,6 +1,6 @@
 # ADR-0002 — Four-layer knowledge separation
 
-- **Status:** accepted
+- **Status:** accepted; amended by ADR-0006 (adds the domain-context layer)
 - **Date:** 2026-10-01
 - **Decision level:** D3
 - **Decided by:** orchestrator (founding architect, OOS-0001)
@@ -19,7 +19,7 @@ bookkeeping. Worse, soft preferences drift into acting as hard requirements.
 
 ## Decision
 Option 2. Each layer has its own location, owner and lifetime
-([ARCHITECTURE §3](../ARCHITECTURE.md#3-the-four-knowledge-layers-and-where-they-live)).
+([ARCHITECTURE §3](../ARCHITECTURE.md#4-knowledge-layers-and-context-scopes)).
 Information crosses layers only through explicit, logged steps, for example a decision
 record citing a CTX entry as evidence. Every claim carries an explicit kind
 ([KNOWLEDGE_TAXONOMY](../KNOWLEDGE_TAXONOMY.md)).

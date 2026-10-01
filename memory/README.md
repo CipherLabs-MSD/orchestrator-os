@@ -2,7 +2,8 @@
 
 This directory is the **project truth → memory** layer for the OOS project. OOS dogfoods
 its own [memory model](../docs/MEMORY_MODEL.md). Managed projects get the same structure
-under `.oos/memory/` in their own repos (OQ-002).
+in their own `ProjectStore` (repository-backed projects: `.oos/memory/`, OQ-002). Domain
+packages may add record types on top.
 
 | File | Purpose |
 |---|---|

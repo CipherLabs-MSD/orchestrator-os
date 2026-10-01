@@ -1,0 +1,146 @@
+{
+  "domain": "software-development",
+  "version": "0.1.0",
+  "description": "Software-development domain policy. Composed over orchestration/kernel/decision_policy.json; may only tighten it.",
+  "class_floors": {
+    "dependency_change": "D2",
+    "api_contract_change": "D2",
+    "ci_cd_change": "D2",
+    "persistent_schema_change": "D3",
+    "auth_or_crypto_change": "D3",
+    "new_service_or_datastore": "D3",
+    "history_rewrite_or_force_push": "D4",
+    "production_deploy": "D4",
+    "publish_release": "D4"
+  },
+  "class_specializes": {
+    "history_rewrite_or_force_push": "destructive_or_irreversible_change",
+    "production_deploy": "live_external_effect",
+    "publish_release": "external_communication"
+  },
+  "dimension_mapping_overrides": {},
+  "combination_rules": [],
+  "prohibited_classes": {
+    "direct_write_to_protected_branch": "agents never commit or push directly to a protected branch; integration goes through the integration authority"
+  },
+  "cost_calibration": "1 = within the run token/time budget; 2 = exceeds the task budget; 3 = any real-money spend",
+  "golden_examples": [
+    {
+      "title": "Rename a private helper",
+      "class": "general",
+      "scores": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected": "D1"
+    },
+    {
+      "title": "Fix off-by-one with regression test",
+      "class": "general",
+      "scores": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected": "D1"
+    },
+    {
+      "title": "Choose a date library",
+      "class": "dependency_change",
+      "scores": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected": "D2"
+    },
+    {
+      "title": "Shape a new internal service interface",
+      "class": "api_contract_change",
+      "scores": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "expected": "D2"
+    },
+    {
+      "title": "File saves to SQLite, no user data yet",
+      "class": "persistent_schema_change",
+      "scores": [
+        2,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "expected": "D3"
+    },
+    {
+      "title": "File saves to SQLite, user saves must migrate",
+      "class": "persistent_schema_change",
+      "scores": [
+        2,
+        2,
+        1,
+        0,
+        0,
+        1
+      ],
+      "expected": "D4"
+    },
+    {
+      "title": "Add OAuth login",
+      "class": "auth_or_crypto_change",
+      "scores": [
+        2,
+        1,
+        2,
+        0,
+        2,
+        1
+      ],
+      "expected": "D4"
+    },
+    {
+      "title": "Drop multiplayer to hit a milestone",
+      "class": "requirement_or_vision_change",
+      "scores": [
+        3,
+        1,
+        0,
+        0,
+        0,
+        3
+      ],
+      "expected": "D4"
+    },
+    {
+      "title": "Subscribe to a paid API tier",
+      "class": "spend_money_or_allocate_funds",
+      "scores": [
+        1,
+        1,
+        0,
+        3,
+        0,
+        1
+      ],
+      "expected": "D4"
+    }
+  ]
+}

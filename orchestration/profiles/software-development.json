@@ -1,0 +1,14 @@
+{
+  "id": "software-development-orchestrator",
+  "name": "Software Development Orchestrator",
+  "version": "0.1.0",
+  "description": "A specialized orchestrator = the kernel composed with the software-development domain package. Configuration, not a fork.",
+  "kernel": "0.2",
+  "domains": ["software-development"],
+  "backends_allowed": ["claude-code", "claude-agent-sdk", "claude-api", "codex", "human"],
+  "policy_overrides": {
+    "class_floors": {},
+    "reserved_for_billy": []
+  },
+  "notes": "Used by the Orchestrator OS project itself (project/backlog.json). Overrides may only tighten (kernel composition_rules)."
+}

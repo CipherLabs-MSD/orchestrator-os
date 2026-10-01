@@ -10,7 +10,8 @@
     "id": { "type": "string", "pattern": "^(DEC|ESC)-[0-9]{4}$" },
     "title": { "type": "string", "minLength": 1 },
     "task_id": { "type": "string" },
-    "level": { "type": "string", "enum": ["D1", "D2", "D3", "D4"] },
+    "level": { "type": "string", "enum": ["D1", "D2", "D3", "D4", "PROHIBITED"] },
+    "profile_id": { "type": "string", "description": "Orchestrator profile whose composed policy classified this decision." },
     "scores": {
       "type": "object",
       "additionalProperties": false,
@@ -24,7 +25,7 @@
         "vision_alignment": { "type": "integer", "minimum": 0, "maximum": 3 }
       }
     },
-    "decision_class": { "type": "string", "description": "A class id from orchestration/decision_policy.json class_floors, or 'general'." },
+    "decision_class": { "type": "string", "description": "A class id from the composed policy (kernel class_floors/prohibited_classes plus the profile's domain packages), or 'general'." },
     "dominant_rule": { "type": "string" },
     "context": { "type": "string" },
     "options": { "type": "array", "items": { "type": "string" } },
@@ -32,7 +33,7 @@
     "rationale": { "type": "string" },
     "evidence": { "type": "array", "items": { "type": "string" } },
     "dissent": { "type": "array", "items": { "type": "string" } },
-    "implementing_commits": { "type": "array", "items": { "type": "string" } },
+    "implementing_changes": { "type": "array", "items": { "type": "string" }, "description": "Change-set references per the domain workspace binding." },
     "adr": { "type": ["string", "null"] },
     "escalation": {
       "type": "object",
@@ -44,7 +45,7 @@
         "cost_of_waiting": { "type": "string" }
       }
     },
-    "status": { "type": "string", "enum": ["proposed", "escalated", "decided", "superseded", "reverted"] },
+    "status": { "type": "string", "enum": ["proposed", "escalated", "decided", "refused", "superseded", "reverted"] },
     "decided_by": { "type": "string", "enum": ["orchestrator", "billy", "contributor"] },
     "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
     "superseded_by": { "type": ["string", "null"] }

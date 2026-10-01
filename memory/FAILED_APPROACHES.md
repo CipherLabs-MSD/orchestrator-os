@@ -9,4 +9,7 @@ Schema: [`schemas/failed-approach.schema.json`](../schemas/failed-approach.schem
 - **Result:** the shell reported `unexpected EOF while looking for matching '`. No files were written.
 - **Why it failed:** the Windows bash tool's handling of quoting in long multi-heredoc commands was not reliable for prose containing apostrophes. The exact cause is unconfirmed.
 - **Retry when:** never needed. Use the file-writing tool per file, or a short Python script that reads its content from data.
+- **Recurred:** 2026-10-01, OOS-0001 addendum. A heredoc Python script failed the same way. This entry had
+  not been consulted before acting. The narrowed cause is apostrophes inside heredoc bodies, even with a
+  quoted delimiter. The working pattern is to write the script with the file tool, then run it.
 - **Scope:** project · **Capabilities:** devops · **Date:** 2026-10-01

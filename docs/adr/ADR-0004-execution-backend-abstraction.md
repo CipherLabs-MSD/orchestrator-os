@@ -1,6 +1,6 @@
 # ADR-0004 — Vendor-neutral execution backend abstraction
 
-- **Status:** accepted
+- **Status:** accepted; amended by ADR-0006 (routing factors; agent_sdk/api_model kinds)
 - **Date:** 2026-10-01
 - **Decision level:** D3
 - **Decided by:** orchestrator (founding architect, OOS-0001)

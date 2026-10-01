@@ -105,6 +105,10 @@ entry, for example after Billy states a preference in conversation. The proposal
 
 ## 5. Contamination controls
 
+0. **Domain ceiling first.** Each domain package declares which user-context categories may
+   ever reach its agents (`user_context_ceiling`). The finance sketch, for example, excludes
+   `creative` entirely. See the relevance pipeline in [CONTEXT_ROUTER §6](CONTEXT_ROUTER.md#6-user-context-relevance-pipeline).
+
 1. **Routing by tag, not by file.** Agents never receive "all of CREATIVE_DNA". They
    receive the entries whose `applies_to_capabilities` and `scope` match the task.
 2. **Citation on use.** When a preference influences a decision, the decision record

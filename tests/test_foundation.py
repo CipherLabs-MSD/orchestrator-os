@@ -58,19 +58,94 @@ class GraphChecks(unittest.TestCase):
 
 class DecisionClassifier(unittest.TestCase):
     def setUp(self):
-        self.policy = v.load_json("orchestration/decision_policy.json")
+        self.kernel = v.compose_policy(v.kernel("decision_policy"))
+        domains = v.load_domains()
+        self.software = v.compose_policy(v.kernel("decision_policy"), domains["software-development"]["policy"])
+        self.finance = v.compose_policy(v.kernel("decision_policy"), domains["finance"]["policy"])
 
     def test_policy_change_is_always_d4(self):
         # The system cannot raise its own authority, even for a "trivial" change.
-        self.assertEqual(v.classify([0, 0, 0, 0, 0, 0], "oos_policy_or_authority_change", self.policy), "D4")
+        self.assertEqual(v.classify([0, 0, 0, 0, 0, 0], "oos_policy_or_authority_change", self.kernel), "D4")
 
     def test_combination_rule_escalates(self):
         # Each dimension alone maps to D3, but together impact>=2 and reversibility>=2 means D4.
-        self.assertEqual(v.classify([2, 2, 0, 0, 0, 0], "general", self.policy), "D4")
+        self.assertEqual(v.classify([2, 2, 0, 0, 0, 0], "general", self.kernel), "D4")
 
     def test_architecture_is_not_automatically_d4(self):
         # Meaningful but reversible, intent-aligned architecture is D3, not "ask the human".
-        self.assertEqual(v.classify([2, 1, 1, 0, 0, 1], "new_service_or_datastore", self.policy), "D3")
+        self.assertEqual(v.classify([2, 1, 1, 0, 0, 1], "new_service_or_datastore", self.software), "D3")
+
+    def test_prohibited_beats_any_score(self):
+        self.assertEqual(v.classify([0, 0, 0, 0, 0, 0], "expose_or_transmit_secrets", self.kernel), "PROHIBITED")
+
+    def test_unmapped_action_is_denied_by_default(self):
+        # Capability != authority: an action with no mapped class is not authorized.
+        with self.assertRaises(ValueError):
+            v.classify([0, 0, 0, 0, 0, 0], "place_market_order", self.kernel)
+
+
+class SameKernelDifferentDomains(unittest.TestCase):
+    """The stricter finance behaviour must come from domain data, not finance-aware code."""
+
+    def setUp(self):
+        k = v.kernel("decision_policy")
+        d = v.load_domains()
+        self.software = v.compose_policy(k, d["software-development"]["policy"])
+        self.finance = v.compose_policy(k, d["finance"]["policy"])
+
+    def test_research_is_autonomous_in_finance(self):
+        self.assertEqual(v.classify([0, 0, 1, 0, 0, 0], "research", self.finance), "D1")
+
+    def test_execute_transaction_needs_billy_even_when_scores_are_low(self):
+        self.assertEqual(v.classify([0, 0, 0, 0, 0, 0], "execute_transaction", self.finance), "D4")
+
+    def test_private_keys_are_prohibited(self):
+        self.assertEqual(v.classify([0, 0, 0, 0, 0, 0], "expose_or_transmit_private_keys", self.finance), "PROHIBITED")
+
+    def test_finance_classes_do_not_exist_in_software_orchestrator(self):
+        with self.assertRaises(ValueError):
+            v.classify([0, 0, 0, 0, 0, 0], "execute_transaction", self.software)
+
+    def test_kernel_prohibitions_hold_in_every_domain(self):
+        for policy in (self.software, self.finance):
+            self.assertEqual(v.classify([0] * 6, "bypass_policy_guard", policy), "PROHIBITED")
+
+
+class TightenOnlyComposition(unittest.TestCase):
+    def setUp(self):
+        self.k = v.kernel("decision_policy")
+
+    def test_compose_never_lowers_a_kernel_floor(self):
+        composed = v.compose_policy(self.k, {"class_floors": {"live_external_effect": "D1"}})
+        self.assertEqual(composed["class_floors"]["live_external_effect"], "D4")
+
+    def test_compose_never_lowers_a_mapping_cell(self):
+        composed = v.compose_policy(self.k, {"dimension_mapping_overrides": {"cost": ["D1", "D1", "D1", "D1"]}})
+        self.assertEqual(composed["dimension_mapping"]["cost"][3], "D4")
+
+    def test_compose_can_tighten(self):
+        composed = v.compose_policy(self.k, {"dimension_mapping_overrides": {"cost": ["D1", "D2", "D4", "D4"]}})
+        self.assertEqual(composed["dimension_mapping"]["cost"], ["D1", "D2", "D4", "D4"])
+
+
+class KernelPurity(unittest.TestCase):
+    def test_detects_domain_vocabulary(self):
+        hits = v.kernel_vocabulary_hits({"class_descriptions": {"x": "place a trade via the broker"}})
+        self.assertTrue(hits)
+
+    def test_ignores_ids_and_ordinary_words(self):
+        self.assertEqual(v.kernel_vocabulary_hits({"$id": "https://github.com/x", "d": "weigh trade-offs"}), [])
+
+    def test_vocabulary_in_keys_is_detected(self):
+        self.assertTrue(v.kernel_vocabulary_hits({"commit_sha": "x"}) or v.kernel_vocabulary_hits({"git_ref": "x"}))
+
+
+class Anchors(unittest.TestCase):
+    def test_github_slug(self):
+        self.assertEqual(v.github_slug("1.4 Invariants"), "14-invariants")
+        self.assertEqual(v.github_slug("Task type → required gates (plus kernel G-SCOPE)"),
+                         "task-type--required-gates-plus-kernel-g-scope")
+        self.assertEqual(v.github_slug("2. Capability vs. authority"), "2-capability-vs-authority")
 
 
 class ContextFileChecks(unittest.TestCase):

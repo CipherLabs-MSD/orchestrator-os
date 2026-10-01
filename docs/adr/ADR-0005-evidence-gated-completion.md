@@ -1,6 +1,6 @@
 # ADR-0005 — Evidence-gated completion
 
-- **Status:** accepted
+- **Status:** accepted; amended by ADR-0006 (evidence binds to an artifact version; commit SHA is the software binding)
 - **Date:** 2026-10-01
 - **Decision level:** D3
 - **Decided by:** orchestrator (founding architect, OOS-0001)

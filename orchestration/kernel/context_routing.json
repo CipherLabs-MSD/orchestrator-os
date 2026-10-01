@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "description": "KERNEL context-routing mechanism. Domain packages supply capability profiles and a user-context ceiling. Human-readable source: docs/CONTEXT_ROUTER.md.",
+  "context_scopes": [
+    "user",
+    "domain",
+    "project",
+    "task"
+  ],
+  "always_include": [
+    "task_brief",
+    "authority",
+    "constraints",
+    "failed_approaches_touching_scope"
+  ],
+  "user_context_relevance_pipeline": [
+    "status == active",
+    "category within the DOMAIN ceiling (domain context_routing.user_context_ceiling)",
+    "category within the capability PROFILE allowance",
+    "scope matches: global, domain:<this domain>, or project:<this project>",
+    "capability within entry.applies_to_capabilities",
+    "profile condition (if any) satisfied"
+  ],
+  "control_plane_user_context": {
+    "description": "Categories the orchestrator itself (Intake, Decision Engine, Escalation) may read when planning, weighing trade-offs or formatting escalations. These are never forwarded wholesale to agent roles.",
+    "categories": [
+      "profile",
+      "working_style",
+      "decision_preference",
+      "long_term_vision"
+    ]
+  }
+}

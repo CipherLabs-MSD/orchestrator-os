@@ -11,6 +11,7 @@ has) or `orchestrator` (resolvable by an agent within its authority, in the name
 | OQ-004 | Which execution backends may receive private project code or user context? | billy | OOS-0013 | open |
 | OQ-005 | Spending and usage budget for autonomous runs | billy | OOS-0010 | open |
 | OQ-006 | Implementation language and runtime for the control plane | orchestrator (OOS-0002, D3). Billy's preference welcome as evidence. | OOS-0003 | open |
+| OQ-007 | Which domain becomes the second *operational* package, and when? (Finance is the documented candidate.) | billy | OOS-0020 | open |
 
 ---
 
@@ -49,3 +50,10 @@ has) or `orchestrator` (resolvable by an agent within its authority, in the name
 ### OQ-006 — Implementation runtime
 - Resolved in OOS-0002 by spike and ADR. Billy may state a preference, which would be recorded as
   evidence, not as a requirement.
+
+### OQ-007 — Second operational domain
+- **Why it matters:** the kernel/domain split (ADR-0006) is only proven by a second *real*
+  domain. Finance is the documented example. It also carries the highest authority risk,
+  because every threshold and transaction rule is a D4 decision for Billy.
+- **Not needed now.** It only matters after the sandbox pilot (OOS-0016). Until then the finance
+  package stays `illustrative` and non-operational.

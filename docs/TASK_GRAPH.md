@@ -54,12 +54,13 @@ cancelled / superseded   (terminal; superseded_by points to the replacement)
 
 ```
 ready_set   = {t ∈ TASK | state=ready}
-parallel_ok = pairs with disjoint write_scope (files/dirs/components)
-              ∧ no shared exclusive resource (DB migration, lockfile, schema)
+parallel_ok = pairs with disjoint resource_scope (software: files/dirs; other domains: datasets, documents, ledgers)
+              ∧ no shared exclusive resource (software: DB migration, lockfile, schema)
 ```
 
-Each parallel task runs in its own worktree (see [GIT_WORKFLOW](GIT_WORKFLOW.md)). Tasks
-with overlapping write scope are serialized, or the Planner refactors the split. A
+Each parallel task runs in its own isolated Workspace (software binding: a worktree, see
+[GIT_WORKFLOW](../domains/software-development/GIT_WORKFLOW.md)). Tasks with overlapping
+resource scope are serialized, or the Planner refactors the split. A
 lease (stored in orchestrator state) prevents two runs from claiming the same task.
 
 ## 5. Revision: plans are hypotheses
@@ -90,5 +91,6 @@ the way it does.
 
 - v0 (OOS-0001): the OOS project's own backlog is `project/backlog.json` (a DAG of
   TASK-level items with milestone tags) plus `project/BACKLOG.md` as the human view.
-- Managed projects (from OOS-0004 on): `.oos/graph/` in the project repo, one file per
-  node or a single JSON document. That choice belongs to OOS-0004.
+- Managed projects (from OOS-0004 on): in the project's `ProjectStore`. For repository-backed
+  projects that means `.oos/graph/`, one file per node or a single JSON document. That choice belongs to OOS-0004.
+- Task types and their gates come from the profile's composed verification (kernel + domains).

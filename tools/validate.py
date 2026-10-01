@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Consistency validator for the Orchestrator OS foundation (OOS-0001).
+"""Consistency validator for the Orchestrator OS foundation (OOS-0001, incl. the
+domain-specialized orchestration addendum).
 
 Stdlib only (DEC-0001). Run from anywhere:
 
@@ -18,17 +19,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 REQUIRED_FILES = [
-    "README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", ".gitignore",
-    "docs/VISION.md", "docs/ARCHITECTURE.md", "docs/CORE_LOOP.md", "docs/KNOWLEDGE_TAXONOMY.md",
-    "docs/MEMORY_MODEL.md", "docs/PERSONAL_CONTEXT_MODEL.md", "docs/CONTEXT_ROUTER.md",
-    "docs/DECISION_ENGINE.md", "docs/AGENT_MODEL.md", "docs/TASK_GRAPH.md", "docs/VERIFICATION.md",
-    "docs/FAILURE_HANDLING.md", "docs/GIT_WORKFLOW.md", "docs/SECURITY_AND_TRUST.md",
-    "docs/adr/README.md", "docs/adr/TEMPLATE.md",
+    "README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", ".gitignore", ".gitattributes",
+    "docs/VISION.md", "docs/ARCHITECTURE.md", "docs/DOMAIN_PACKAGES.md", "docs/CORE_LOOP.md",
+    "docs/KNOWLEDGE_TAXONOMY.md", "docs/MEMORY_MODEL.md", "docs/PERSONAL_CONTEXT_MODEL.md",
+    "docs/CONTEXT_ROUTER.md", "docs/DECISION_ENGINE.md", "docs/AGENT_MODEL.md", "docs/TASK_GRAPH.md",
+    "docs/VERIFICATION.md", "docs/FAILURE_HANDLING.md", "docs/SECURITY_AND_TRUST.md",
+    "docs/adr/README.md", "docs/adr/TEMPLATE.md", "docs/adr/ADR-0006-domain-agnostic-kernel.md",
     "context/README.md", "context/IMPORT_PROTOCOL.md",
     "memory/README.md", "memory/PROJECT_STATE.md", "memory/DECISIONS/README.md", "memory/LEARNINGS.md",
     "memory/FAILED_APPROACHES.md", "memory/OPEN_QUESTIONS.md", "memory/HANDOFF.md",
-    "orchestration/README.md", "orchestration/decision_policy.json", "orchestration/capabilities.json",
-    "orchestration/backends.json", "orchestration/verification_gates.json", "orchestration/context_routing.json",
+    "orchestration/README.md", "orchestration/backends.json",
+    "orchestration/kernel/decision_policy.json", "orchestration/kernel/verification.json",
+    "orchestration/kernel/context_routing.json", "orchestration/profiles/software-development.json",
+    "domains/README.md", "domains/software-development/README.md", "domains/software-development/domain.json",
+    "domains/software-development/GIT_WORKFLOW.md", "domains/finance/README.md", "domains/finance/domain.json",
     "project/MILESTONES.md", "project/OKRS.md", "project/BACKLOG.md", "project/backlog.json",
 ]
 
@@ -41,16 +45,24 @@ CONTEXT_FILES = {
     "context/LONG_TERM_VISION.md": "long_term_vision",
 }
 
-# Directories that make up the project-agnostic core, and the only core files allowed
-# to name a pilot project (as a consumer, not as architecture).
+KERNEL_DIR = "orchestration/kernel"
+COMPONENTS = ("capabilities", "policy", "verification", "context_routing")
+
+# Kernel purity (invariant I-1, docs/ARCHITECTURE.md §1.4).
+# (a) Core files may name real projects only where they are explicitly motivating examples.
 CORE_DIRS = ["docs", "schemas", "orchestration"]
-PILOT_NAME_ALLOWLIST = {"docs/VISION.md"}
-PILOT_NAME_PATTERN = re.compile(r"demon[\s_-]*codex", re.IGNORECASE)
+PROJECT_NAME_ALLOWLIST = {"docs/VISION.md", "docs/DOMAIN_PACKAGES.md", "docs/adr/ADR-0006-domain-agnostic-kernel.md"}
+PROJECT_NAME_PATTERN = re.compile(r"demon[\s_-]*codex|finance\s*os\b", re.IGNORECASE)
+# (b) Kernel machine-readable files must not contain domain vocabulary at all.
+KERNEL_JSON_GLOBS = ["orchestration/kernel/*.json", "orchestration/backends.json", "schemas/*.json"]
+DOMAIN_VOCABULARY = re.compile(
+    r"\b(git|github|gitlab|commits?|branch(?:es)?|worktrees?|pull requests?|unit tests?|ci/cd|"
+    r"trad(?:e|es|ing)(?!-offs?)|portfolios?|brokers?|stocks?|unity|godot|unreal)\b", re.IGNORECASE)
 
 SECRET_PATTERNS = [
     re.compile(r"gh[pousr]_[A-Za-z0-9]{30,}"),
     re.compile(r"github_pat_[A-Za-z0-9_]{40,}"),
-    re.compile(r"sk-(?:ant-|proj-)?[A-Za-z0-9_-]{24,}"),
+    re.compile(r"\bsk-(?:ant-|proj-)?[A-Za-z0-9_-]{24,}"),
     re.compile(r"AKIA[0-9A-Z]{16}"),
     re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
     re.compile(r"xox[baprs]-[A-Za-z0-9-]{10,}"),
@@ -61,7 +73,7 @@ SUPPORTED_SCHEMA_KEYWORDS = {
     "additionalProperties", "enum", "pattern", "items", "minimum", "maximum", "minLength",
 }
 
-LEVEL_ORDER = ["D1", "D2", "D3", "D4"]
+LEVEL_ORDER = ["D1", "D2", "D3", "D4", "PROHIBITED"]
 
 
 # --------------------------------------------------------------------------- helpers
@@ -190,77 +202,134 @@ def _schema(name: str) -> dict:
     return load_json(f"schemas/{name}.schema.json")
 
 
+def kernel(name: str) -> dict:
+    return load_json(f"{KERNEL_DIR}/{name}.json")
+
+
+def load_domains() -> dict[str, dict]:
+    """Load every domains/<id>/ package into one normalized shape. Illustrative packages
+    supply sketches instead of component files."""
+    out: dict[str, dict] = {}
+    for mpath in sorted((ROOT / "domains").glob("*/domain.json")):
+        m = json.loads(mpath.read_text(encoding="utf-8"))
+        base = mpath.parent.relative_to(ROOT).as_posix()
+        comp = m.get("components", {})
+        pkg: dict = {"dir": base, "manifest": m}
+        if m.get("operational"):
+            def part(key: str) -> dict:
+                return load_json(f"{base}/{comp[key]}") if key in comp else {}
+            pkg["capabilities"] = part("capabilities").get("capabilities", [])
+            pkg["policy"] = part("policy")
+            pkg["verification"] = part("verification")
+            pkg["routing"] = part("context_routing")
+            pkg["ceiling"] = pkg["routing"].get("user_context_ceiling", [])
+        else:
+            pkg["capabilities"] = [{"id": c} for c in m.get("capability_sketch", [])]
+            pkg["policy"] = m.get("policy_sketch", {})
+            pkg["verification"] = {"evidence_types": m.get("evidence_sketch", {}), "gates": [], "task_type_gates": {}}
+            pkg["routing"] = {"profiles": {}}
+            pkg["ceiling"] = m.get("user_context_ceiling", [])
+        out[m["id"]] = pkg
+    return out
+
+
+def load_profiles() -> dict[str, dict]:
+    profiles = {}
+    for p in sorted((ROOT / "orchestration/profiles").glob("*.json")):
+        prof = json.loads(p.read_text(encoding="utf-8"))
+        prof["_file"] = p.relative_to(ROOT).as_posix()
+        profiles[prof["id"]] = prof
+    return profiles
+
+
 def check_registries() -> list[str]:
     errors = []
-    pairs = [
-        ("orchestration/capabilities.json", "capabilities", "capability"),
-        ("orchestration/backends.json", "backends", "execution-backend"),
-        ("orchestration/verification_gates.json", "gates", "verification-gate"),
-        ("project/backlog.json", "items", "backlog-item"),
-    ]
-    for rel, key, schema_name in pairs:
-        data = load_json(rel)
+
+    def conform(rel: str, items: list, schema_name: str) -> None:
         schema = _schema(schema_name)
         seen = set()
-        for i, item in enumerate(data.get(key, [])):
+        for i, item in enumerate(items):
             errors.extend(f"{rel}[{i}]: {e}" for e in validate_instance(item, schema))
             if item.get("id") in seen:
                 errors.append(f"{rel}: duplicate id {item.get('id')}")
             seen.add(item.get("id"))
+
+    conform("orchestration/backends.json", load_json("orchestration/backends.json")["backends"], "execution-backend")
+    conform(f"{KERNEL_DIR}/verification.json", kernel("verification")["gates"], "verification-gate")
+    conform("project/backlog.json", load_json("project/backlog.json")["items"], "backlog-item")
+    for pid, prof in load_profiles().items():
+        body = {k: v for k, v in prof.items() if k != "_file"}
+        errors.extend(f"{prof['_file']}: {e}" for e in validate_instance(body, _schema("orchestrator-profile")))
+    for did, pkg in load_domains().items():
+        m = pkg["manifest"]
+        errors.extend(f"{pkg['dir']}/domain.json: {e}" for e in validate_instance(m, _schema("domain-package")))
+        if pkg["dir"].split("/")[-1] != did:
+            errors.append(f"{pkg['dir']}/domain.json: id {did!r} must equal its directory name")
+        if m.get("operational"):
+            missing = [c for c in COMPONENTS if c not in m.get("components", {})]
+            if missing:
+                errors.append(f"{pkg['dir']}: operational package lacks components {missing}")
+                continue
+            conform(f"{pkg['dir']}/capabilities.json", pkg["capabilities"], "capability")
+            conform(f"{pkg['dir']}/verification.json", pkg["verification"].get("gates", []), "verification-gate")
+        elif m.get("status") not in ("illustrative", "deprecated"):
+            errors.append(f"{pkg['dir']}: non-operational package must be 'illustrative' or 'deprecated'")
     return errors
 
 
 def check_cross_references() -> list[str]:
+    """Kernel-internal references, backends, and the OOS backlog against its profile."""
     errors = []
-    caps = {c["id"] for c in load_json("orchestration/capabilities.json")["capabilities"]}
-    gates_doc = load_json("orchestration/verification_gates.json")
-    gates = {g["id"] for g in gates_doc["gates"]}
-    routing = load_json("orchestration/context_routing.json")
-    profiles = routing["profiles"]
-    ctx_categories = set(_schema("knowledge-entry")["properties"]["category"]["enum"])
-
-    for c in load_json("orchestration/capabilities.json")["capabilities"]:
-        if c["context_profile"] not in profiles:
-            errors.append(f"capability {c['id']}: unknown context_profile {c['context_profile']}")
-        for g in c["default_verification_gates"]:
-            if g not in gates:
-                errors.append(f"capability {c['id']}: unknown gate {g}")
-        for r in c.get("related", []):
-            if r not in caps:
-                errors.append(f"capability {c['id']}: unknown related capability {r}")
-    for t, gs in gates_doc["task_type_gates"].items():
+    kver = kernel("verification")
+    base_types = set(kver["evidence_base_types"])
+    kgates = {g["id"] for g in kver["gates"]}
+    for g in kver["gates"]:
+        for e in g["evidence_types"]:
+            if e not in base_types:
+                errors.append(f"kernel gate {g['id']}: evidence type {e} is not a kernel base type")
+    for t, gs in kver["task_type_gates"].items():
         for g in gs:
-            if g not in gates:
-                errors.append(f"task_type_gates.{t}: unknown gate {g}")
-    if not any(g.get("implicit") for g in gates_doc["gates"]):
-        errors.append("verification_gates: no implicit gate (G-SCOPE expected)")
-    for name, prof in profiles.items():
-        for cat in prof.get("user_context_categories", []):
-            if cat not in ctx_categories:
-                errors.append(f"routing profile {name}: unknown user_context category {cat}")
-        for cat in prof.get("user_context_conditions", {}):
-            if cat not in prof.get("user_context_categories", []):
-                errors.append(f"routing profile {name}: condition for non-allowed category {cat}")
-    for cat in routing.get("control_plane_user_context", {}).get("categories", []):
-        if cat not in ctx_categories:
-            errors.append(f"control_plane_user_context: unknown category {cat}")
-    routable = {c for prof in profiles.values() for c in prof.get("user_context_categories", [])}
-    routable |= set(routing.get("control_plane_user_context", {}).get("categories", []))
-    for cat in sorted(ctx_categories - routable):
-        errors.append(f"user_context category {cat} has no consumer in context_routing.json")
+            if g not in kgates:
+                errors.append(f"kernel task type {t}: unknown kernel gate {g}")
+    if not any(g.get("implicit") for g in kver["gates"]):
+        errors.append("kernel verification: no implicit gate (G-SCOPE expected)")
+
+    ctx_categories = set(_schema("knowledge-entry")["properties"]["category"]["enum"])
+    routing = kernel("context_routing")
+    control = set(routing.get("control_plane_user_context", {}).get("categories", []))
+    for cat in sorted(control - ctx_categories):
+        errors.append(f"kernel control_plane_user_context: unknown category {cat}")
+    domains = load_domains()
+    consumed = set(control)
+    for pkg in domains.values():
+        if pkg["manifest"].get("operational"):
+            for prof in pkg["routing"].get("profiles", {}).values():
+                consumed |= set(prof.get("user_context_categories", []))
+    for cat in sorted(ctx_categories - consumed):
+        errors.append(f"user_context category {cat} has no consumer (no domain profile or control plane)")
+
     for b in load_json("orchestration/backends.json")["backends"]:
         for s in b.get("strengths", []):
-            if s not in caps:
-                errors.append(f"backend {b['id']}: unknown strength capability {s}")
+            dom, _, cap = s.partition("/")
+            if dom not in domains or cap not in {c["id"] for c in domains[dom]["capabilities"]}:
+                errors.append(f"backend {b['id']}: unknown strength {s}")
 
+    backlog = load_json("project/backlog.json")
+    profiles = load_profiles()
+    prof = profiles.get(backlog.get("profile", ""))
+    if not prof:
+        return errors + [f"project/backlog.json: unknown profile {backlog.get('profile')!r}"]
+    pdomains = [domains[d] for d in prof["domains"] if d in domains]
+    caps = {c["id"] for d in pdomains for c in d["capabilities"]}
+    gates = kgates | {g["id"] for d in pdomains for g in d["verification"].get("gates", [])}
     open_qs = set(re.findall(r"^\| (OQ-\d{3}) \|", read("memory/OPEN_QUESTIONS.md"), re.MULTILINE))
-    for item in load_json("project/backlog.json")["items"]:
+    for item in backlog["items"]:
         for c in item.get("capabilities", []):
             if c not in caps:
-                errors.append(f"{item['id']}: unknown capability {c}")
+                errors.append(f"{item['id']}: capability {c} not provided by profile {prof['id']}")
         for g in item["gates"]:
             if g not in gates:
-                errors.append(f"{item['id']}: unknown gate {g}")
+                errors.append(f"{item['id']}: gate {g} not provided by profile {prof['id']}")
         for q in item.get("blocked_by_questions", []):
             if q not in open_qs:
                 errors.append(f"{item['id']}: unknown open question {q}")
@@ -356,9 +425,38 @@ def check_backlog() -> list[str]:
     return errors
 
 
+def _hi(a: str, b: str) -> str:
+    return max(a, b, key=LEVEL_ORDER.index)
+
+
+def compose_policy(kernel_policy: dict, *domain_policies: dict) -> dict:
+    """kernel ⊕ domains, tighten-only by construction: every level is the max of its contributors.
+    (check_domain_packages separately reports any *attempt* to loosen, which is a defect.)"""
+    p = {
+        "dimensions": kernel_policy["dimensions"],
+        "dimension_mapping": {d: list(r) for d, r in kernel_policy["dimension_mapping"].items()},
+        "class_floors": dict(kernel_policy["class_floors"]),
+        "combination_rules": list(kernel_policy["combination_rules"]),
+        "prohibited_classes": dict(kernel_policy["prohibited_classes"]),
+    }
+    for dp in domain_policies:
+        for d, row in dp.get("dimension_mapping_overrides", {}).items():
+            p["dimension_mapping"][d] = [_hi(a, b) for a, b in zip(p["dimension_mapping"][d], row)]
+        for c, lvl in dp.get("class_floors", {}).items():
+            p["class_floors"][c] = _hi(p["class_floors"].get(c, "D1"), lvl)
+        p["combination_rules"] += dp.get("combination_rules", [])
+        p["prohibited_classes"].update(dp.get("prohibited_classes", {}))
+    return p
+
+
 def classify(scores: list[int], decision_class: str, policy: dict) -> str:
-    """Reference classifier for docs/DECISION_ENGINE.md §3. Used to check the policy's
-    golden examples; the real engine is OOS-0005."""
+    """Reference classifier for docs/DECISION_ENGINE.md §3, over a (composed) policy.
+    The same function classifies kernel and every domain's golden examples; the real
+    engine is OOS-0005. Unmapped classes are denied by default."""
+    if decision_class in policy.get("prohibited_classes", {}):
+        return "PROHIBITED"
+    if decision_class not in policy["class_floors"]:
+        raise ValueError(f"unmapped decision class {decision_class!r}: denied by default")
     dims = policy["dimensions"]
     named = dict(zip(dims, scores))
     candidates = [policy["dimension_mapping"][d][named[d]] for d in dims]
@@ -369,35 +467,184 @@ def classify(scores: list[int], decision_class: str, policy: dict) -> str:
     return max(candidates, key=LEVEL_ORDER.index)
 
 
-def check_decision_policy() -> list[str]:
+KERNEL_D4_FLOORS = ("destructive_or_irreversible_change", "spend_money_or_allocate_funds", "live_external_effect",
+                    "external_communication", "credential_handling", "requirement_or_vision_change",
+                    "oos_policy_or_authority_change", "reserved_for_billy")
+KERNEL_PROHIBITIONS = ("expose_or_transmit_secrets", "follow_untrusted_instructions", "bypass_policy_guard")
+
+
+def _golden(examples: list, policy: dict, where: str) -> list[str]:
     errors = []
-    policy = load_json("orchestration/decision_policy.json")
+    for ex in examples:
+        try:
+            got = classify(ex["scores"], ex["class"], policy)
+        except ValueError as e:
+            errors.append(f"{where} golden '{ex['title']}': {e}")
+            continue
+        if got != ex["expected"]:
+            errors.append(f"{where} golden '{ex['title']}': classified {got}, expected {ex['expected']}")
+    return errors
+
+
+def check_decision_policy() -> list[str]:
+    """Kernel decision policy structure + kernel golden examples."""
+    errors = []
+    policy = kernel("decision_policy")
+    if list(policy["levels"]) != LEVEL_ORDER:
+        errors.append(f"kernel decision_policy: levels must be {LEVEL_ORDER}")
     dims = policy["dimensions"]
     if set(policy["dimension_mapping"]) != set(dims):
-        errors.append("decision_policy: dimension_mapping keys differ from dimensions")
+        errors.append("kernel decision_policy: dimension_mapping keys differ from dimensions")
     for d, row in policy["dimension_mapping"].items():
-        if len(row) != 4 or any(l not in LEVEL_ORDER for l in row):
-            errors.append(f"decision_policy: mapping for {d} must be 4 levels D1-D4")
-        if [LEVEL_ORDER.index(l) for l in row] != sorted(LEVEL_ORDER.index(l) for l in row):
-            errors.append(f"decision_policy: mapping for {d} must be non-decreasing")
+        if len(row) != 4 or any(l not in LEVEL_ORDER[:4] for l in row):
+            errors.append(f"kernel decision_policy: mapping for {d} must be 4 levels D1-D4")
+        elif [LEVEL_ORDER.index(l) for l in row] != sorted(LEVEL_ORDER.index(l) for l in row):
+            errors.append(f"kernel decision_policy: mapping for {d} must be non-decreasing")
     for rule in policy["combination_rules"]:
         for d in rule["when"]:
             if d not in dims:
-                errors.append(f"decision_policy: rule {rule['id']} uses unknown dimension {d}")
-    for key in ("oos_policy_or_authority_change", "reserved_for_billy", "destructive_data_or_history",
-                "spend_money_or_license", "production_deploy_or_infrastructure", "external_communication",
-                "requirement_or_vision_change"):
+                errors.append(f"kernel decision_policy: rule {rule['id']} uses unknown dimension {d}")
+    for key in KERNEL_D4_FLOORS:
         if policy["class_floors"].get(key) != "D4":
-            errors.append(f"decision_policy: class floor {key} must be D4")
+            errors.append(f"kernel decision_policy: class floor {key} must be D4")
+    for key in KERNEL_PROHIBITIONS:
+        if key not in policy["prohibited_classes"]:
+            errors.append(f"kernel decision_policy: prohibition {key} missing")
+    for key in set(policy["class_floors"]) & set(policy["prohibited_classes"]):
+        errors.append(f"kernel decision_policy: {key} is both a floor and a prohibition")
     if errors:
         return errors
-    for ex in policy["golden_examples"]:
-        if ex["class"] not in policy["class_floors"]:
-            errors.append(f"golden example '{ex['title']}': unknown class {ex['class']}")
-            continue
-        got = classify(ex["scores"], ex["class"], policy)
-        if got != ex["expected"]:
-            errors.append(f"golden example '{ex['title']}': classified {got}, expected {ex['expected']}")
+    return _golden(policy["golden_examples"], compose_policy(policy), "kernel")
+
+
+def check_domain_packages() -> list[str]:
+    """Every domain package (including illustrative ones) must compose tighten-only and
+    reference only things that exist."""
+    errors = []
+    kpol = kernel("decision_policy")
+    kver = kernel("verification")
+    base_types = set(kver["evidence_base_types"])
+    kgates = {g["id"] for g in kver["gates"]}
+    ktasks = set(kver["task_type_gates"])
+    ctx_categories = set(_schema("knowledge-entry")["properties"]["category"]["enum"])
+    for did, pkg in load_domains().items():
+        where = f"domain {did}"
+        dp = pkg["policy"]
+        # --- tighten-only policy
+        for d, row in dp.get("dimension_mapping_overrides", {}).items():
+            if d not in kpol["dimension_mapping"]:
+                errors.append(f"{where}: override for unknown dimension {d}")
+                continue
+            for i, (k, v) in enumerate(zip(kpol["dimension_mapping"][d], row)):
+                if v not in LEVEL_ORDER[:4] or LEVEL_ORDER.index(v) < LEVEL_ORDER.index(k):
+                    errors.append(f"{where}: mapping {d}[{i}]={v} loosens kernel {k}")
+        for c, lvl in dp.get("class_floors", {}).items():
+            if lvl not in LEVEL_ORDER[:4]:
+                errors.append(f"{where}: floor {c}={lvl} invalid (use prohibited_classes for PROHIBITED)")
+            elif c in kpol["prohibited_classes"]:
+                errors.append(f"{where}: {c} is a kernel prohibition and cannot become a floor")
+            elif c in kpol["class_floors"] and LEVEL_ORDER.index(lvl) < LEVEL_ORDER.index(kpol["class_floors"][c]):
+                errors.append(f"{where}: floor {c}={lvl} loosens kernel {kpol['class_floors'][c]}")
+        for c, target in dp.get("class_specializes", {}).items():
+            if target in kpol["prohibited_classes"]:
+                if c not in dp.get("prohibited_classes", {}):
+                    errors.append(f"{where}: {c} specializes prohibition {target} and must be prohibited")
+            elif target not in kpol["class_floors"]:
+                errors.append(f"{where}: {c} specializes unknown kernel class {target}")
+            elif c in dp.get("class_floors", {}) and \
+                    LEVEL_ORDER.index(dp["class_floors"][c]) < LEVEL_ORDER.index(kpol["class_floors"][target]):
+                errors.append(f"{where}: {c} is looser than the kernel class it specializes ({target})")
+        for rule in dp.get("combination_rules", []):
+            if any(d not in kpol["dimensions"] for d in rule.get("when", {})) or rule.get("level") not in LEVEL_ORDER[:4]:
+                errors.append(f"{where}: invalid combination rule {rule.get('id')}")
+        errors.extend(_golden(dp.get("golden_examples", []), compose_policy(kpol, dp), where))
+        # --- verification
+        ver = pkg["verification"]
+        dtypes = ver.get("evidence_types", {})
+        for t, base in dtypes.items():
+            if base not in base_types:
+                errors.append(f"{where}: evidence type {t} extends unknown base {base}")
+        dgates = {g["id"] for g in ver.get("gates", [])}
+        for g in sorted(dgates & kgates):
+            errors.append(f"{where}: gate {g} redefines a kernel gate")
+        for g in ver.get("gates", []):
+            for e in g.get("evidence_types", []):
+                if e not in base_types and e not in dtypes:
+                    errors.append(f"{where}: gate {g['id']} uses unknown evidence type {e}")
+        for t, gs in ver.get("task_type_gates", {}).items():
+            if t in ktasks:
+                errors.append(f"{where}: task type {t} redefines a kernel task type")
+            for g in gs:
+                if g not in kgates | dgates:
+                    errors.append(f"{where}: task type {t} uses unknown gate {g}")
+        # --- context routing
+        ceiling = set(pkg["ceiling"])
+        for cat in sorted(ceiling - ctx_categories):
+            errors.append(f"{where}: ceiling has unknown category {cat}")
+        profiles = pkg["routing"].get("profiles", {})
+        for name, prof in profiles.items():
+            allowed = set(prof.get("user_context_categories", []))
+            for cat in sorted(allowed - ceiling):
+                errors.append(f"{where}: profile {name} allows {cat} above the domain ceiling")
+            for cat in prof.get("user_context_conditions", {}):
+                if cat not in allowed:
+                    errors.append(f"{where}: profile {name} has a condition for non-allowed category {cat}")
+        # --- capabilities (operational packages only carry full records)
+        if pkg["manifest"].get("operational"):
+            caps = {c["id"] for c in pkg["capabilities"]}
+            for c in pkg["capabilities"]:
+                if c["context_profile"] not in profiles:
+                    errors.append(f"{where}: capability {c['id']} has unknown context_profile {c['context_profile']}")
+                for g in c["default_verification_gates"]:
+                    if g not in kgates | dgates:
+                        errors.append(f"{where}: capability {c['id']} uses unknown gate {g}")
+                for r in c.get("related", []):
+                    if r not in caps:
+                        errors.append(f"{where}: capability {c['id']} has unknown related {r}")
+    return errors
+
+
+def check_profiles() -> list[str]:
+    """A profile = kernel + operational domains + declared backends + tighten-only overrides."""
+    errors = []
+    domains = load_domains()
+    backends = {b["id"] for b in load_json("orchestration/backends.json")["backends"]}
+    kpol = kernel("decision_policy")
+    kgates = {g["id"] for g in kernel("verification")["gates"]}
+    profiles = load_profiles()
+    if not profiles:
+        errors.append("orchestration/profiles: no orchestrator profile defined")
+    for pid, prof in profiles.items():
+        where = prof["_file"]
+        loaded = []
+        for d in prof["domains"]:
+            if d not in domains:
+                errors.append(f"{where}: unknown domain {d}")
+            elif not domains[d]["manifest"].get("operational"):
+                errors.append(f"{where}: domain {d} is not operational and cannot be loaded")
+            else:
+                loaded.append(domains[d])
+        for b in prof["backends_allowed"]:
+            if b not in backends:
+                errors.append(f"{where}: unknown backend {b}")
+        seen_caps: dict[str, str] = {}
+        seen_gates: dict[str, str] = {}
+        for pkg in loaded:
+            did = pkg["manifest"]["id"]
+            for c in pkg["capabilities"]:
+                if c["id"] in seen_caps:
+                    errors.append(f"{where}: capability {c['id']} collides ({seen_caps[c['id']]}, {did}); qualify ids")
+                seen_caps[c["id"]] = did
+            for g in pkg["verification"].get("gates", []):
+                if g["id"] in seen_gates or g["id"] in kgates:
+                    errors.append(f"{where}: gate {g['id']} collides across loaded packages")
+                seen_gates[g["id"]] = did
+        composed = compose_policy(kpol, *[pkg["policy"] for pkg in loaded])
+        for c, lvl in prof["policy_overrides"].get("class_floors", {}).items():
+            if c not in composed["class_floors"]:
+                errors.append(f"{where}: override for unknown class {c}")
+            elif LEVEL_ORDER.index(lvl) < LEVEL_ORDER.index(composed["class_floors"][c]):
+                errors.append(f"{where}: override {c}={lvl} loosens composed {composed['class_floors'][c]}")
     return errors
 
 
@@ -465,13 +712,42 @@ def check_context_files() -> list[str]:
     return errors
 
 
-def check_project_agnostic_core() -> list[str]:
+def kernel_vocabulary_hits(obj, path: str = "$") -> list[str]:
+    """Find domain vocabulary in a kernel JSON document (keys and string values;
+    $id/$schema URLs excluded). Underscores count as word breaks, so snake_case
+    identifiers such as commit_sha are caught."""
+    hits = []
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k in ("$id", "$schema"):
+                continue
+            if DOMAIN_VOCABULARY.search(k.replace("_", " ")):
+                hits.append(f"{path}.{k} (key)")
+            hits.extend(kernel_vocabulary_hits(v, f"{path}.{k}"))
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            hits.extend(kernel_vocabulary_hits(v, f"{path}[{i}]"))
+    elif isinstance(obj, str):
+        m = DOMAIN_VOCABULARY.search(obj.replace("_", " "))
+        if m:
+            hits.append(f"{path}: '{m.group(0)}'")
+    return hits
+
+
+def check_kernel_purity() -> list[str]:
+    """Invariant I-1: no project names in core files (outside designated example docs), and
+    no domain vocabulary in kernel machine-readable files."""
     errors = []
     for d in CORE_DIRS:
         for p in (ROOT / d).rglob("*"):
             rel = p.relative_to(ROOT).as_posix()
-            if p.is_file() and rel not in PILOT_NAME_ALLOWLIST and PILOT_NAME_PATTERN.search(p.read_text(encoding="utf-8")):
-                errors.append(f"{rel}: core file names a pilot project (keep the core project-agnostic)")
+            if p.is_file() and rel not in PROJECT_NAME_ALLOWLIST and PROJECT_NAME_PATTERN.search(p.read_text(encoding="utf-8")):
+                errors.append(f"{rel}: core file names a real project (allowed only in designated example docs)")
+    for pattern in KERNEL_JSON_GLOBS:
+        for p in sorted(ROOT.glob(pattern)):
+            rel = p.relative_to(ROOT).as_posix()
+            for hit in kernel_vocabulary_hits(json.loads(p.read_text(encoding="utf-8"))):
+                errors.append(f"{rel}: domain vocabulary in kernel file at {hit}")
     return errors
 
 
@@ -492,22 +768,47 @@ def check_no_secrets() -> list[str]:
 
 
 _LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+_HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*#*\s*$", re.MULTILINE)
+
+
+def github_slug(heading: str) -> str:
+    """GitHub-style heading anchor: lowercase, drop punctuation/symbols, spaces -> '-'."""
+    text = re.sub(r"[`*_]", lambda m: "_" if m.group(0) == "_" else "", heading.strip().lower())
+    text = "".join(ch for ch in text if ch.isalnum() or ch in " -_")
+    return text.replace(" ", "-")
+
+
+def anchors_of(path: Path) -> set[str]:
+    text = re.sub(r"```.*?```", "", path.read_text(encoding="utf-8"), flags=re.DOTALL)
+    slugs: set[str] = set()
+    counts: dict[str, int] = {}
+    for h in _HEADING.findall(text):
+        slug = github_slug(h)
+        n = counts.get(slug, 0)
+        slugs.add(slug if n == 0 else f"{slug}-{n}")
+        counts[slug] = n + 1
+    return slugs
 
 
 def check_links() -> list[str]:
-    """Relative Markdown links must point at existing files or directories (anchors not checked)."""
+    """Relative Markdown links must point at existing files, and #anchors at existing headings."""
     errors = []
     for p in ROOT.rglob("*.md"):
         if ".git" in p.parts:
             continue
         text = re.sub(r"```.*?```", "", p.read_text(encoding="utf-8"), flags=re.DOTALL)
         text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+        text = re.sub(r"`[^`\n]*`", "", text)
         for target in _LINK.findall(text):
-            if re.match(r"^[a-z]+:", target) or target.startswith("#"):
+            if re.match(r"^[a-z]+:", target):
                 continue
-            path = target.split("#", 1)[0]
-            if path and not (p.parent / path).exists():
-                errors.append(f"{p.relative_to(ROOT).as_posix()}: broken link -> {target}")
+            path, _, anchor = target.partition("#")
+            dest = (p.parent / path) if path else p
+            rel = p.relative_to(ROOT).as_posix()
+            if not dest.exists():
+                errors.append(f"{rel}: broken link -> {target}")
+            elif anchor and dest.is_file() and dest.suffix == ".md" and anchor not in anchors_of(dest):
+                errors.append(f"{rel}: broken anchor -> {target}")
     return errors
 
 
@@ -518,9 +819,11 @@ CHECKS = [
     ("registries conform to schemas", check_registries),
     ("cross-references resolve", check_cross_references),
     ("backlog DAG + views agree", check_backlog),
-    ("decision policy + golden examples", check_decision_policy),
+    ("kernel decision policy + golden examples", check_decision_policy),
+    ("domain packages compose tighten-only", check_domain_packages),
+    ("orchestrator profiles", check_profiles),
     ("context files: placeholders / curated entries", check_context_files),
-    ("core is project-agnostic", check_project_agnostic_core),
+    ("kernel purity (no domain contamination)", check_kernel_purity),
     ("no secrets", check_no_secrets),
     ("internal links resolve", check_links),
 ]

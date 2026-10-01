@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/domain-package.schema.json",
+  "title": "Domain package manifest",
+  "description": "domains/<id>/domain.json. A domain package specializes the kernel with capabilities, policy, verification, context rules, memory record types, tools and a workspace binding. See docs/DOMAIN_PACKAGES.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "version", "kernel_compat", "status", "operational", "description", "components", "workspace_binding"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "kernel_compat": { "type": "string", "description": "Kernel minor version this package targets." },
+    "status": { "type": "string", "enum": ["illustrative", "draft", "active", "deprecated"] },
+    "operational": { "type": "boolean", "description": "false = may not be loaded by any orchestrator profile." },
+    "description": { "type": "string" },
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "capabilities": { "type": "string" },
+        "policy": { "type": "string" },
+        "verification": { "type": "string" },
+        "context_routing": { "type": "string" },
+        "workspace_binding": { "type": "string" }
+      }
+    },
+    "workspace_binding": {
+      "type": "object",
+      "required": ["kind", "summary"],
+      "properties": {
+        "kind": { "type": "string" },
+        "summary": { "type": "string" }
+      }
+    },
+    "tools_declared": { "type": "array", "items": { "type": "string" } },
+    "memory_record_types": { "type": "array", "items": { "type": "string" } },
+    "escalation_rules": { "type": "string" },
+    "capability_sketch": { "type": "array", "items": { "type": "string" } },
+    "evidence_sketch": { "type": "object" },
+    "user_context_ceiling": { "type": "array", "items": { "type": "string" } },
+    "policy_sketch": { "type": "object" }
+  }
+}

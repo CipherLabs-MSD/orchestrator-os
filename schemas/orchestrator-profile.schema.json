@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/orchestrator-profile.schema.json",
+  "title": "Orchestrator profile",
+  "description": "A specialized orchestrator: the kernel composed with one or more operational domain packages, an allowed set of execution backends, and tighten-only overrides. The output a future Orchestrator Factory would generate. See docs/DOMAIN_PACKAGES.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "version", "kernel", "domains", "backends_allowed", "policy_overrides"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "kernel": { "type": "string" },
+    "domains": { "type": "array", "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" } },
+    "backends_allowed": { "type": "array", "items": { "type": "string" } },
+    "policy_overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "class_floors": { "type": "object" },
+        "reserved_for_billy": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

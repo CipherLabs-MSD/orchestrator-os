@@ -16,3 +16,22 @@ project details. This is the reason OQ-001 exists.
 - **Applies to capabilities:** devops, testing, architecture
 
 Tooling must run on Windows. Use stdlib-only scripts until OOS-0002 chooses a runtime (DEC-0001).
+
+### LRN-0003 — "General" designs drift toward the first domain
+- **Evidence:** OOS-0001 addendum audit (2026-10-01). The nominally general first draft had 14/14
+  software capabilities, software-only gates and task types, software class floors in the generic
+  Decision Engine, and git terms in kernel schemas (`commit_sha`, `built_at_sha`, `implementing_commits`, `worktree`).
+- **Scope:** project · **Confidence:** high · **Learned:** 2026-10-01 · **Status:** active
+- **Applies to capabilities:** architecture, code_review
+
+Writing "domain-agnostic" in a doc does not make a design domain-agnostic. Run the kernel-purity
+check, and ask "kernel or domain?" for every concept. See ADR-0006 and AGENTS.md §3a.
+
+### LRN-0004 — Regex `\b` does not split snake_case
+- **Evidence:** `test_vocabulary_in_keys_is_detected` failed: `\bcommit\b` does not match `commit_sha`,
+  because `_` is a word character. The fix was to treat `_` as a break before matching.
+- **Scope:** project · **Confidence:** high · **Learned:** 2026-10-01 · **Status:** active
+- **Applies to capabilities:** testing, code_review
+
+A purity or vocabulary check over identifiers must normalize separators first, or it silently
+misses exactly the contamination it targets. Mutation-test such checks (tools/mutation_check.py).

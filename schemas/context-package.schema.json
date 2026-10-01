@@ -5,12 +5,13 @@
   "description": "The scoped context delivered to one agent run, with a manifest explaining every inclusion. See docs/CONTEXT_ROUTER.md.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["package_id", "task_id", "role_id", "built_at_sha", "task_brief", "authority", "constraints", "manifest"],
+  "required": ["package_id", "task_id", "role_id", "profile_id", "built_at_version", "task_brief", "authority", "constraints", "manifest"],
   "properties": {
     "package_id": { "type": "string" },
     "task_id": { "type": "string" },
     "role_id": { "type": "string" },
-    "built_at_sha": { "type": "string", "description": "Commit the project truth was read at; stale if HEAD moves." },
+    "profile_id": { "type": "string", "description": "Orchestrator profile (kernel + domain packages) that built this package." },
+    "built_at_version": { "type": "string", "description": "Artifact version the project truth was read at (per the domain workspace binding); stale if the project moves on." },
     "task_brief": {
       "type": "object",
       "required": ["objective", "acceptance_criteria", "out_of_scope", "evidence_required"],
@@ -32,6 +33,7 @@
       }
     },
     "constraints": { "type": "array", "items": { "type": "string" } },
+    "domain_context": { "type": "array", "items": { "type": "string" }, "description": "Domain-package knowledge and policy relevant to this task." },
     "project_truth": { "type": "array", "items": { "type": "string" } },
     "memory": { "type": "array", "items": { "type": "string" } },
     "user_context": { "type": "array", "items": { "type": "string", "pattern": "^CTX-[0-9]{4}$" } },
@@ -43,7 +45,7 @@
         "required": ["ref", "layer", "trust", "reason"],
         "properties": {
           "ref": { "type": "string" },
-          "layer": { "type": "string", "enum": ["policy", "user_context", "project_truth", "general_knowledge", "orchestrator_state"] },
+          "layer": { "type": "string", "enum": ["policy", "user_context", "domain_context", "project_truth", "general_knowledge", "orchestrator_state"] },
           "trust": { "type": "string", "enum": ["trusted_policy", "principal", "project_truth", "user_context", "agent_output", "untrusted_external"] },
           "reason": { "type": "string" },
           "included": { "type": "boolean" },

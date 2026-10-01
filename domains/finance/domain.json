@@ -1,0 +1,54 @@
+{
+  "id": "finance",
+  "name": "Finance (illustrative sketch)",
+  "version": "0.0.1",
+  "kernel_compat": "0.2",
+  "status": "illustrative",
+  "operational": false,
+  "description": "ILLUSTRATIVE ONLY. Shows how a finance domain would specialize the kernel with much stricter authority. Not an operational policy. It sets no thresholds and no trading rules, and no profile may load it.",
+  "components": {},
+  "workspace_binding": {
+    "kind": "undecided",
+    "summary": "Likely: project store = research notebooks/reports + a proposal ledger; change set = analysis artifacts and transaction PROPOSALS; integration = human-approved execution. To be designed (OOS-0020)."
+  },
+  "tools_declared": [],
+  "memory_record_types": [],
+  "escalation_rules": "Stricter than kernel defaults; see policy_sketch.",
+  "capability_sketch": ["financial_research", "portfolio_analysis", "quantitative_analysis", "risk_analysis", "onchain_analysis"],
+  "evidence_sketch": {
+    "portfolio_risk_check": "check_result",
+    "data_source_provenance": "external",
+    "scenario_result": "measurement"
+  },
+  "user_context_ceiling": ["decision_preference", "working_style"],
+  "policy_sketch": {
+    "class_floors": {
+      "research": "D1",
+      "read_portfolio": "D1",
+      "calculate_scenarios": "D1",
+      "generate_investment_hypothesis": "D1",
+      "propose_transaction": "D2",
+      "prepare_transaction": "D4",
+      "execute_transaction": "D4",
+      "change_risk_limits": "D4"
+    },
+    "class_specializes": {
+      "execute_transaction": "live_external_effect",
+      "change_risk_limits": "oos_policy_or_authority_change"
+    },
+    "preconditions": {
+      "read_portfolio": "an explicit data-access authority grant from Billy for that portfolio"
+    },
+    "prohibited_classes": {
+      "expose_or_transmit_private_keys": "specializes the kernel prohibition expose_or_transmit_secrets for wallet and exchange keys"
+    },
+    "thresholds": "DELIBERATELY UNDEFINED. Any transaction-size or risk threshold is a D4 decision owned by Billy.",
+    "golden_examples": [
+      {"title": "Research a sector", "class": "research", "scores": [0, 0, 1, 0, 0, 0], "expected": "D1"},
+      {"title": "Propose a transaction for review", "class": "propose_transaction", "scores": [1, 0, 1, 0, 0, 0], "expected": "D2"},
+      {"title": "Execute any transaction", "class": "execute_transaction", "scores": [1, 3, 1, 3, 1, 0], "expected": "D4"},
+      {"title": "Change risk limits", "class": "change_risk_limits", "scores": [2, 1, 0, 0, 0, 1], "expected": "D4"},
+      {"title": "Send a private key to a service", "class": "expose_or_transmit_private_keys", "scores": [0, 0, 0, 0, 3, 0], "expected": "PROHIBITED"}
+    ]
+  }
+}

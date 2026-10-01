@@ -17,6 +17,7 @@ for decisions that exceed its authority or genuinely need his judgment.
 | Bounded autonomy: explicit authority levels | Unbounded autonomy, or "ask the human about everything" |
 | Model-independent: any capable execution backend | A wrapper around one vendor's agent |
 | Project-agnostic: projects plug in | Shaped around its first pilot |
+| One domain-agnostic kernel, specialized per domain (software, finance, game dev, research, …) | A separate orchestrator codebase per domain |
 
 ## End-to-end flow (target)
 
@@ -32,17 +33,24 @@ VISION / INTENT
 
 1. **Plans are hypotheses.** The task graph is revised whenever evidence contradicts
    it. An obsolete plan is a defect, not a contract.
-2. **Separate the four knowledge layers.** User context, project truth, general
-   knowledge and orchestrator state ([KNOWLEDGE_TAXONOMY.md](KNOWLEDGE_TAXONOMY.md)).
+2. **Separate the knowledge layers.** User context, domain context, project truth, general
+   knowledge and orchestrator state ([ARCHITECTURE §4](ARCHITECTURE.md#4-knowledge-layers-and-context-scopes),
+   [KNOWLEDGE_TAXONOMY.md](KNOWLEDGE_TAXONOMY.md)).
 3. **Maximum useful autonomy inside explicit boundaries.** The D1–D4 levels are a policy
    over impact, reversibility, uncertainty, cost, security and vision alignment
    ([DECISION_ENGINE.md](DECISION_ENGINE.md)).
 4. **Failure produces information.** Retries are bounded. Dead ends are recorded so
    they are not repeated ([FAILURE_HANDLING.md](FAILURE_HANDLING.md)).
-5. **Git provides transactional safety and history.** Every autonomous change can be
-   reviewed and reverted ([GIT_WORKFLOW.md](GIT_WORKFLOW.md)).
+5. **Transactional safety and history.** Every autonomous change can be reviewed and
+   reverted, through the domain's workspace binding (software: git, see
+   [GIT_WORKFLOW](../domains/software-development/GIT_WORKFLOW.md)).
 6. **Untrusted input stays data.** Retrieved text never becomes instructions
    ([SECURITY_AND_TRUST.md](SECURITY_AND_TRUST.md)).
+7. **Domain-specialized orchestration.** Software Development, Finance, Game Development,
+   Research and Creative Production orchestrators are *configurations* of one kernel
+   ([ARCHITECTURE §1](ARCHITECTURE.md#1-core-architectural-principle-domain-specialized-orchestration)).
+   FinanceOS is the motivating example of a domain that needs the same loop under much
+   stricter authority. It is not an implementation target of OOS-0001.
 
 ## How we will know it works
 
