@@ -5,7 +5,8 @@ routable entries. Tooling for this is OOS-0012. Until then the protocol is run b
 
 ## Preconditions
 
-1. **OQ-001 is resolved.** We know where the user-context instance lives (it must be a private location).
+1. **The private store exists.** Per ADR-0007 the instance lives in the private `orchestrator-context` store,
+   never in the public `orchestrator-os` repository. Creating it is part of OOS-0012.
 2. Billy has chosen the source material and provided it. Nothing is pulled automatically.
 
 ## Steps
@@ -18,7 +19,7 @@ routable entries. Tooling for this is OOS-0012. Until then the protocol is run b
 | 4 | **Classify.** Assign category, kind (`user_preference` / `user_fact`), scope, strength, `applies_to_capabilities`, and confidence (based on how often and how explicitly it appears). | agent | classified candidates |
 | 5 | **Detect conflicts.** Link entries in tension (`conflicts`). Do not resolve them silently. | agent | conflict pairs |
 | 6 | **Review.** Billy accepts, edits or rejects each entry. Rejected entries are not stored. | **Billy** | accepted entries |
-| 7 | **Commit.** Write accepted entries with `status: active`, `learned`, `last_confirmed`, and `source` including `confirmed-by-billy`. | agent | entries in context files |
+| 7 | **Commit (to the private store only).** Write accepted entries with `status: active`, `learned`, `last_confirmed`, and `source` including `confirmed-by-billy`. | agent | entries in context files |
 | 8 | **Validate.** Run `python tools/validate.py`. | agent | pass |
 
 ## Ongoing maintenance

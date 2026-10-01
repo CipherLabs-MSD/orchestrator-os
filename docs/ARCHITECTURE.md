@@ -160,7 +160,7 @@ Rationale: [ADR-0002](adr/ADR-0002-four-layer-knowledge-separation.md), amended 
 
 | Layer | What it holds | Location | Owner | Lifetime |
 |---|---|---|---|---|
-| **User context** | Curated facts about Billy that may influence decisions across projects | User Context Store (schema in `context/`, instance location: OQ-001) | Billy (curated) | Evolves, with provenance |
+| **User context** | Curated facts about Billy that may influence decisions across projects | Private store `orchestrator-context` (ADR-0007; not yet created). Schema and template in `context/`. | Billy (curated) | Evolves, with provenance |
 | **Domain context** | Domain knowledge and policy: capabilities, gates, floors, domain defaults and constraints | `domains/<id>/` | OOS (changes are D4 for policy) | Versioned with OOS |
 | **Project truth** | Content, ADRs, history, requirements, constraints, project memory | The project's `ProjectStore` (repository-backed: `.oos/` + the project's docs) | The project | Lives with the project |
 | **General knowledge** | Model knowledge, external docs, research results | Model weights + retrieved sources (untrusted) | Nobody (external) | Re-verified when used |
@@ -184,6 +184,7 @@ are never concatenated wholesale into a prompt.
 | [ADR-0004](adr/ADR-0004-execution-backend-abstraction.md) | Execution backends sit behind a vendor-neutral contract |
 | [ADR-0005](adr/ADR-0005-evidence-gated-completion.md) | Completion requires gate-specific evidence, verified independently |
 | [ADR-0006](adr/ADR-0006-domain-agnostic-kernel.md) | One domain-agnostic kernel plus domain packages, composed into profiles, instead of separate orchestrator codebases |
+| [ADR-0007](adr/ADR-0007-initial-owner-policy.md) | Initial **owner policy** (`orchestration/owner_policy.json`): private context store, in-session escalation, Billy-only merge, provider data policy, 0 SEK spending |
 
 ## 6. Future direction: an orchestrator that generates orchestrators
 
@@ -198,6 +199,5 @@ These are tracked in the backlog and in [`memory/OPEN_QUESTIONS.md`](../memory/O
 
 - Implementation language and runtime for the control plane (OOS-0002 spike).
 - Whether the orchestrator runs as a long-lived daemon or as scheduled sessions (OOS-0002).
-- Physical location of the User Context Store (OQ-001, needs Billy).
 - Per-project OOS state layout for repository-backed projects (`.oos/` proposed; OQ-002, decided in OOS-0004).
 - Domain package loading and composition implementation (OOS-0018).

@@ -12,6 +12,13 @@ D2 decisions are recorded here as `DEC-NNNN-<slug>.md`. D3 and D4 decisions are 
 | [DEC-0002](DEC-0002-agents-md-canonical.md) | AGENTS.md is canonical; vendor files are import shims | OOS-0001 | 2026-10-01 |
 | [DEC-0003](DEC-0003-addendum-implementation-choices.md) | Implementation choices for the domain-specialization addendum | OOS-0001 | 2026-10-01 |
 
+## Owner (D4) decisions
+
+| ID | Title | Task | Date |
+|---|---|---|---|
+| [DEC-0004](DEC-0004-oos-0001-owner-acceptance.md) | **Owner acceptance of OOS-0001** (decided_by: billy) | OOS-0001 | 2026-10-01 |
+| [DEC-0005](DEC-0005-priv-0001-history-rewrite.md) | PRIV-0001: rewrite unpublished history to remove private-repository text | OOS-0001 | 2026-10-01 |
+
 ## ADR index (D3/D4)
 
 | ADR | Title | Level |
@@ -22,3 +29,4 @@ D2 decisions are recorded here as `DEC-NNNN-<slug>.md`. D3 and D4 decisions are 
 | [ADR-0004](../../docs/adr/ADR-0004-execution-backend-abstraction.md) | Vendor-neutral execution backend abstraction | D3 |
 | [ADR-0005](../../docs/adr/ADR-0005-evidence-gated-completion.md) | Evidence-gated completion | D3 |
 | [ADR-0006](../../docs/adr/ADR-0006-domain-agnostic-kernel.md) | One domain-agnostic kernel plus domain specialization | D3 |
+| [ADR-0007](../../docs/adr/ADR-0007-initial-owner-policy.md) | Initial owner policy | D4 |

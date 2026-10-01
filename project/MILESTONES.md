@@ -6,7 +6,7 @@ revised as evidence arrives.
 
 | ID | Name | Goal | Exit criterion (evidence) | Backlog |
 |---|---|---|---|---|
-| **M0** | Foundation | A coherent, validated design that implementation can build against without redesign | OOS-0001 merged after Billy's review. `tools/validate.py` and tests pass. | OOS-0001 |
+| **M0** | Foundation | A coherent, validated design that implementation can build against without redesign | OOS-0001 accepted by Billy (DONE 2026-10-01). The milestone completes when Billy merges it into `main`. `tools/validate.py` and tests pass. | OOS-0001 |
 | **M1** | Walking skeleton | One task goes through the full loop on a **sandbox** repo, using the software-development profile loaded through the domain loader: observe, plan, classify, route, execute in an isolated workspace, verify, record | Recorded run with a verified task branch, a PR, a gate verdict bound to its SHA, and a generated escalation for a seeded D4 scenario. No protected-branch writes. | OOS-0002 – OOS-0010, OOS-0018 |
 | **M2** | Memory and personal context | Learning persists across sessions. Curated user context is routed selectively. | A second session resumes from HANDOFF without human re-briefing. Routing golden tests show zero user-context leakage. | OOS-0011, OOS-0012 |
 | **M3** | Multi-agent organization | Composed roles, two or more backends, parallel workspaces, independent review | Two tasks run in parallel without conflict. A review stance runs on a different backend from its producer. Conflicting recommendations are resolved and logged. | OOS-0013 – OOS-0015 |

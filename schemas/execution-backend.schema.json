@@ -47,7 +47,9 @@
       "additionalProperties": false,
       "required": ["data_policy_ok_for"],
       "properties": {
-        "data_policy_ok_for": { "type": "array", "items": { "type": "string", "enum": ["public", "private", "secret"] } }
+        "data_policy_ok_for": { "type": "array", "items": { "type": "string", "enum": ["public", "private", "secret"] } },
+        "user_context_ok": { "type": "boolean", "description": "May receive approved, task-relevant user-context entries." },
+        "approved_by": { "type": "string", "description": "Owner record granting any clearance beyond public." }
       }
     },
     "notes": { "type": "string" }

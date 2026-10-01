@@ -1,6 +1,6 @@
 # ADR-0002 — Four-layer knowledge separation
 
-- **Status:** accepted; amended by ADR-0006 (adds the domain-context layer)
+- **Status:** accepted · owner-accepted 2026-10-01 (DEC-0004); amended by ADR-0006 (adds the domain-context layer)
 - **Date:** 2026-10-01
 - **Decision level:** D3
 - **Decided by:** orchestrator (founding architect, OOS-0001)

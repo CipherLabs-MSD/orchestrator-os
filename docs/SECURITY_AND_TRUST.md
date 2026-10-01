@@ -94,7 +94,8 @@ keys. Executing instructions found in untrusted content. Bypassing the Policy Gu
 
 ## 5. Secrets
 
-- Secrets are never placed in context packages, memory, logs, handoffs or change sets.
+- Secrets are never placed in context packages, memory, logs, handoffs or change sets. Private keys,
+  seed phrases and equivalent signing secrets are never supplied as model context (PROHIBITED).
 - Backends receive credentials through scoped, short-lived injection only when a task
   requires them (designed in OOS-0008). Agents never see long-lived tokens or private keys.
 - `.gitignore` covers common secret files. G-SCOPE scans for credential patterns.
@@ -104,8 +105,14 @@ keys. Executing instructions found in untrusted content. Bypassing the Policy Gu
 ## 6. Data classification
 
 Projects declare `data_class: public | private | secret`. Backends declare which
-classes they may receive (`trust.data_policy_ok_for`). The router never sends a
-private project's context to a backend that is not cleared for it.
+classes they may receive (`trust.data_policy_ok_for`) and whether they may receive approved
+user context (`trust.user_context_ok`). The router never sends a private project's context to a
+backend that is not cleared for it.
+
+**Owner policy (ADR-0007):** only the Claude and Codex backends are cleared for `private` project code
+and approved user context, under least privilege and task relevance. Any other provider needs explicit
+owner authorization. **No AI backend is ever cleared for `secret`.** The validator enforces that the
+registry never exceeds owner policy.
 
 **This repository is public.** It must never contain user-context entries, secrets, or
 private project details.

@@ -28,7 +28,8 @@ REQUIRED_FILES = [
     "context/README.md", "context/IMPORT_PROTOCOL.md",
     "memory/README.md", "memory/PROJECT_STATE.md", "memory/DECISIONS/README.md", "memory/LEARNINGS.md",
     "memory/FAILED_APPROACHES.md", "memory/OPEN_QUESTIONS.md", "memory/HANDOFF.md",
-    "orchestration/README.md", "orchestration/backends.json",
+    "orchestration/README.md", "orchestration/backends.json", "orchestration/owner_policy.json",
+    "docs/adr/ADR-0007-initial-owner-policy.md", "memory/DECISIONS/DEC-0004-oos-0001-owner-acceptance.md",
     "orchestration/kernel/decision_policy.json", "orchestration/kernel/verification.json",
     "orchestration/kernel/context_routing.json", "orchestration/profiles/software-development.json",
     "domains/README.md", "domains/software-development/README.md", "domains/software-development/domain.json",
@@ -51,7 +52,8 @@ COMPONENTS = ("capabilities", "policy", "verification", "context_routing")
 # Kernel purity (invariant I-1, docs/ARCHITECTURE.md §1.4).
 # (a) Core files may name real projects only where they are explicitly motivating examples.
 CORE_DIRS = ["docs", "schemas", "orchestration"]
-PROJECT_NAME_ALLOWLIST = {"docs/VISION.md", "docs/DOMAIN_PACKAGES.md", "docs/adr/ADR-0006-domain-agnostic-kernel.md"}
+PROJECT_NAME_ALLOWLIST = {"docs/VISION.md", "docs/DOMAIN_PACKAGES.md", "docs/adr/ADR-0006-domain-agnostic-kernel.md",
+                          "docs/adr/ADR-0007-initial-owner-policy.md"}
 PROJECT_NAME_PATTERN = re.compile(r"demon[\s_-]*codex|finance\s*os\b", re.IGNORECASE)
 # (b) Kernel machine-readable files must not contain domain vocabulary at all.
 KERNEL_JSON_GLOBS = ["orchestration/kernel/*.json", "orchestration/backends.json", "schemas/*.json"]
@@ -255,6 +257,8 @@ def check_registries() -> list[str]:
             seen.add(item.get("id"))
 
     conform("orchestration/backends.json", load_json("orchestration/backends.json")["backends"], "execution-backend")
+    errors.extend(f"orchestration/owner_policy.json: {e}"
+                  for e in validate_instance(load_json("orchestration/owner_policy.json"), _schema("owner-policy")))
     conform(f"{KERNEL_DIR}/verification.json", kernel("verification")["gates"], "verification-gate")
     conform("project/backlog.json", load_json("project/backlog.json")["items"], "backlog-item")
     for pid, prof in load_profiles().items():
@@ -604,6 +608,48 @@ def check_domain_packages() -> list[str]:
     return errors
 
 
+def check_owner_policy() -> list[str]:
+    """Owner policy (ADR-0007) is the ceiling for installation-level authority: the backend
+    registry may never grant more than it, and kernel policy must stay consistent with it."""
+    errors = []
+    owner = load_json("orchestration/owner_policy.json")
+    backends = {b["id"]: b for b in load_json("orchestration/backends.json")["backends"]}
+    dp = owner["ai_provider_data_policy"]
+    for bid in dp["approved_backends"]:
+        if bid not in backends:
+            errors.append(f"owner policy: approved backend {bid} is not in the registry")
+    for bid, b in backends.items():
+        trust = b["trust"]
+        if b["kind"] == "human":
+            continue
+        if "secret" in trust["data_policy_ok_for"]:
+            errors.append(f"backend {bid}: AI backends may never be cleared for 'secret'")
+        elevated = "private" in trust["data_policy_ok_for"] or trust.get("user_context_ok")
+        if elevated and bid not in dp["approved_backends"]:
+            errors.append(f"backend {bid}: cleared for private data/user context without owner approval")
+        if elevated and trust.get("approved_by") != owner["record"]:
+            errors.append(f"backend {bid}: elevated clearance must cite owner record {owner['record']}")
+        if trust.get("user_context_ok") and "approved_user_context" not in dp["may_receive"]:
+            errors.append(f"backend {bid}: user_context_ok but owner policy grants no user context")
+    kpol = kernel("decision_policy")
+    if owner["spending"]["autonomous_limit"]["amount"] == 0:
+        if kpol["class_floors"].get("spend_money_or_allocate_funds") != "D4" or kpol["dimension_mapping"]["cost"][3] != "D4":
+            errors.append("owner policy: 0 spending limit requires spend floor D4 and cost[3] = D4 in the kernel")
+    if owner["integration_authority"]["merge_to_protected_canonical"] == "billy_only" and \
+            kpol["integration_authority"].get("default") != "billy":
+        errors.append("owner policy: Billy-only merge requires kernel integration_authority.default = billy")
+    if not any(c["status"] == "active" for c in owner["escalation"]["channels"]):
+        errors.append("owner policy: at least one active escalation channel is required")
+    second = owner.get("second_operational_domain", {})
+    if second.get("status") == "deferred":
+        if second.get("selected") is not None:
+            errors.append("owner policy: second domain is deferred but a selection is recorded")
+        for did, pkg in load_domains().items():
+            if did in second.get("candidates", []) and pkg["manifest"].get("operational"):
+                errors.append(f"domain {did}: operational while the owner has deferred the second-domain decision")
+    return errors
+
+
 def check_profiles() -> list[str]:
     """A profile = kernel + operational domains + declared backends + tighten-only overrides."""
     errors = []
@@ -702,9 +748,12 @@ def check_context_text(rel: str, text: str, category: str) -> list[str]:
 def check_context_files() -> list[str]:
     errors = []
     all_ids: dict[str, str] = {}
+    private_store = load_json("orchestration/owner_policy.json")["user_context_store"]["location"] != "public_repository"
     for rel, category in CONTEXT_FILES.items():
         text = read(rel)
         errors.extend(check_context_text(rel, text, category))
+        if private_store and "status: placeholder" not in text.split("-->", 1)[0]:
+            errors.append(f"{rel}: owner policy keeps user context in a private store; public files must stay placeholders")
         for e in parse_context_entries(text):
             if e["id"] in all_ids:
                 errors.append(f"{rel}: duplicate {e['id']} (also in {all_ids[e['id']]})")
@@ -822,6 +871,7 @@ CHECKS = [
     ("kernel decision policy + golden examples", check_decision_policy),
     ("domain packages compose tighten-only", check_domain_packages),
     ("orchestrator profiles", check_profiles),
+    ("owner policy enforced", check_owner_policy),
     ("context files: placeholders / curated entries", check_context_files),
     ("kernel purity (no domain contamination)", check_kernel_purity),
     ("no secrets", check_no_secrets),

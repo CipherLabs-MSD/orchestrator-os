@@ -53,6 +53,10 @@ MUTATIONS = {
     "project name in core doc": lambda r: tedit(r, "docs/CORE_LOOP.md", lambda s: s + "\nFinanceOS uses this loop.\n"),
     "broken anchor": lambda r: tedit(r, "docs/CORE_LOOP.md", lambda s: s + "\n[x](ARCHITECTURE.md#no-such-section)\n"),
     "invented user context": lambda r: tedit(r, "context/CREATIVE_DNA.md", lambda s: s.replace("_None yet._", "### CTX-0001 — Likes neon\n- statement: Billy likes neon\n")),
+    "backend cleared without owner approval": lambda r: jedit(r, "orchestration/backends.json", lambda d: d["backends"].append(dict(d["backends"][3], id="other-llm", vendor="Other"))),
+    "AI backend cleared for secret": lambda r: jedit(r, "orchestration/backends.json", lambda d: d["backends"][0]["trust"]["data_policy_ok_for"].append("secret")),
+    "public context file marked curated": lambda r: tedit(r, "context/WORKING_STYLE.md", lambda s: s.replace("status: placeholder", "status: curated", 1)),
+    "deferred second domain made operational": lambda r: jedit(r, FIN, lambda d: d.__setitem__("operational", True)),
     "backlog cycle": lambda r: jedit(r, "project/backlog.json", lambda d: d["items"][1]["depends_on"].append("OOS-0019")),
 }
 

@@ -1,6 +1,6 @@
 # ADR-0006 — One domain-agnostic kernel plus domain specialization
 
-- **Status:** accepted
+- **Status:** accepted · owner-accepted 2026-10-01 (DEC-0004)
 - **Date:** 2026-10-01
 - **Decision level:** D3 (founding architecture, within the vision Billy stated in the OOS-0001 addendum)
 - **Decided by:** orchestrator (founding architect, OOS-0001 addendum), at Billy's direction

@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/owner-policy.schema.json",
+  "title": "Owner policy",
+  "description": "Installation-level decisions taken by the owner (D4): user-context storage, escalation channels, integration authority, AI provider data policy, spending, deferred choices. Applies to every orchestrator profile and can only be changed by the owner.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "description", "decided_by", "decided", "record", "user_context_store", "escalation", "integration_authority", "ai_provider_data_policy", "spending"],
+  "properties": {
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "decided_by": { "type": "string", "enum": ["billy"] },
+    "decided": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "record": { "type": "string", "pattern": "^ADR-[0-9]{4}$" },
+    "user_context_store": {
+      "type": "object",
+      "required": ["location", "working_name", "status", "public_repo_must_not_contain"],
+      "properties": {
+        "location": { "type": "string", "enum": ["private_repository", "local_private_directory"] },
+        "working_name": { "type": "string" },
+        "status": { "type": "string", "enum": ["not_created", "created"] },
+        "public_repo_may_contain": { "type": "array", "items": { "type": "string" } },
+        "public_repo_must_not_contain": { "type": "string" },
+        "model": { "type": "string" }
+      }
+    },
+    "escalation": {
+      "type": "object",
+      "required": ["channels"],
+      "properties": {
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "status"],
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "status": { "type": "string", "enum": ["active", "planned", "disabled"] }
+            }
+          }
+        },
+        "future_channels": { "type": "array", "items": { "type": "string" } },
+        "future_channels_status": { "type": "string" }
+      }
+    },
+    "integration_authority": {
+      "type": "object",
+      "required": ["merge_to_protected_canonical", "agent_merge_authority"],
+      "properties": {
+        "merge_to_protected_canonical": { "type": "string", "enum": ["billy_only"] },
+        "agent_merge_authority": { "type": "string", "enum": ["none"] },
+        "agent_actions_eligible_when_a_task_authorizes_them": { "type": "array", "items": { "type": "string" } },
+        "change_requires": { "type": "string" }
+      }
+    },
+    "ai_provider_data_policy": {
+      "type": "object",
+      "required": ["approved_backends", "may_receive", "conditions", "never_as_model_context", "other_backends"],
+      "properties": {
+        "approved_backends": { "type": "array", "items": { "type": "string" } },
+        "may_receive": { "type": "array", "items": { "type": "string", "enum": ["private_project_code", "approved_user_context"] } },
+        "conditions": { "type": "array", "items": { "type": "string" } },
+        "never_as_model_context": { "type": "array", "items": { "type": "string" } },
+        "other_backends": { "type": "string" },
+        "clarified": { "type": "string" }
+      }
+    },
+    "spending": {
+      "type": "object",
+      "required": ["autonomous_limit", "financial_commitment_or_external_cost"],
+      "properties": {
+        "autonomous_limit": {
+          "type": "object",
+          "required": ["amount", "currency"],
+          "properties": {
+            "amount": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+          }
+        },
+        "agents_may": { "type": "array", "items": { "type": "string" } },
+        "financial_commitment_or_external_cost": { "type": "string", "enum": ["D4"] },
+        "future_options": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "second_operational_domain": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "enum": ["deferred", "selected"] },
+        "candidates": { "type": "array", "items": { "type": "string" } },
+        "selected": { "type": ["string", "null"] },
+        "open_question": { "type": "string" }
+      }
+    }
+  }
+}

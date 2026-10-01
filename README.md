@@ -74,4 +74,5 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 python tools/validate.py          # structure, cross-references, tighten-only composition, kernel purity, links
 python -m unittest discover tests # test suite (stdlib only, Python ≥ 3.10)
 python tools/mutation_check.py    # plants known defects in a temp copy; every one must be caught
+python tools/prepublish_check.py   # before any push: scans the commits to be published
 ```

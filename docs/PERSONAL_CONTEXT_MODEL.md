@@ -115,5 +115,8 @@ entry, for example after Billy states a preference in conversation. The proposal
    cites the entry ID. That makes the influence auditable and reversible.
 3. **No back-writing.** Project outcomes never edit user context automatically.
    "Project Y chose Postgres" is not evidence that Billy likes Postgres.
-4. **Privacy.** The user-context *instance* must not live in a public repository. This
-   repo is public. Until OQ-001 is answered, `context/` contains schemas and placeholders only.
+4. **Privacy.** The user-context *instance* lives in the private store `orchestrator-context`
+   (owner decision, ADR-0007). The public repo's `context/` holds schemas, placeholders and
+   fictional examples only.
+5. **Provider clearance.** Only backends cleared by owner policy (`trust.user_context_ok`) may
+   receive entries, and only the task-relevant ones the router selects. They never get the full profile by default.

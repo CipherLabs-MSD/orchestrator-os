@@ -1,0 +1,116 @@
+{
+  "version": "1.0.0",
+  "description": "OWNER POLICY: installation-level decisions taken by Billy (D4). Trusted policy for every profile. It is not kernel: it may name concrete backends and currencies. Record: docs/adr/ADR-0007-initial-owner-policy.md. Only Billy may change it.",
+  "decided_by": "billy",
+  "decided": "2026-10-01",
+  "record": "ADR-0007",
+  "user_context_store": {
+    "location": "private_repository",
+    "working_name": "orchestrator-context",
+    "status": "not_created",
+    "public_repo_may_contain": [
+      "schemas",
+      "interfaces",
+      "documentation",
+      "fictional_or_hypothetical_examples",
+      "import_export_protocols",
+      "validation_rules"
+    ],
+    "public_repo_must_not_contain": "Billy's actual personal context, unless Billy explicitly approves publication",
+    "model": "approval, provenance, scope, confidence, strength, conflict and supersession rules of docs/PERSONAL_CONTEXT_MODEL.md still apply"
+  },
+  "escalation": {
+    "channels": [
+      {
+        "id": "active_session",
+        "description": "Billy in the active Orchestrator interaction/session",
+        "status": "active"
+      }
+    ],
+    "future_channels": [
+      "notifications",
+      "digests",
+      "email",
+      "messaging",
+      "dashboards"
+    ],
+    "future_channels_status": "not implemented; adding one is an owner decision"
+  },
+  "integration_authority": {
+    "merge_to_protected_canonical": "billy_only",
+    "agent_merge_authority": "none",
+    "agent_actions_eligible_when_a_task_authorizes_them": [
+      "create_branches_or_workspaces",
+      "modify_permitted_files",
+      "run_tests",
+      "create_commits",
+      "push_permitted_branches",
+      "create_or_update_pull_requests",
+      "review_work",
+      "recommend_merge"
+    ],
+    "change_requires": "explicit owner decision"
+  },
+  "ai_provider_data_policy": {
+    "approved_backends": [
+      "claude-code",
+      "claude-agent-sdk",
+      "claude-api",
+      "codex"
+    ],
+    "may_receive": [
+      "private_project_code",
+      "approved_user_context"
+    ],
+    "conditions": [
+      "only for an authorized task",
+      "least privilege",
+      "selected by the Context Router",
+      "task-relevant context only",
+      "never the complete personal profile by default",
+      "no unrelated project information"
+    ],
+    "never_as_model_context": [
+      "secrets",
+      "credentials",
+      "private keys",
+      "seed phrases",
+      "signing credentials",
+      "authentication secrets",
+      "passwords",
+      "API secrets",
+      "equivalent secret material"
+    ],
+    "other_backends": "require explicit owner authorization or a later policy decision",
+    "clarified": "2026-10-01: Billy confirmed the four approved backends. The approval grants no access to secrets. Least privilege applies."
+  },
+  "spending": {
+    "autonomous_limit": {
+      "amount": 0,
+      "currency": "SEK"
+    },
+    "agents_may": [
+      "identify paid services",
+      "compare costs",
+      "estimate required spending",
+      "recommend purchases",
+      "prepare a proposed action"
+    ],
+    "financial_commitment_or_external_cost": "D4",
+    "future_options": [
+      "per_run_budgets",
+      "provider_budgets",
+      "domain_budgets",
+      "project_budgets",
+      "transaction_thresholds"
+    ]
+  },
+  "second_operational_domain": {
+    "status": "deferred",
+    "candidates": [
+      "finance"
+    ],
+    "selected": null,
+    "open_question": "OQ-007"
+  }
+}

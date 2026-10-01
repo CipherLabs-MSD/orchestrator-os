@@ -8,8 +8,10 @@
 > No agent may infer, invent or "fill in" entries. Entries arrive only through
 > [IMPORT_PROTOCOL.md](IMPORT_PROTOCOL.md), with Billy's acceptance.
 >
-> ⚠️ **This repository is public.** Real entries must not be committed here until
-> OQ-001 (where the user-context instance lives) is decided.
+> ⚠️ **This repository is public. Billy's actual personal context never lives here.**
+> Owner decision ([ADR-0007](../docs/adr/ADR-0007-initial-owner-policy.md) §1): real entries live in a separate
+> **private** store, working name `orchestrator-context` (not yet created; OOS-0012). This directory
+> holds only the file structure, placeholders and fictional examples. It is the template the private store follows.
 
 ## Rules
 

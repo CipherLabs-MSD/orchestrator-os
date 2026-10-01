@@ -35,3 +35,14 @@ check, and ask "kernel or domain?" for every concept. See ADR-0006 and AGENTS.md
 
 A purity or vocabulary check over identifiers must normalize separators first, or it silently
 misses exactly the contamination it targets. Mutation-test such checks (tools/mutation_check.py).
+
+### LRN-0005 — Check source visibility before quoting another repository
+- **Evidence:** The pre-push review (2026-10-01) found that the unpublished addendum commit paraphrased a **private**
+  repository's GitHub description in two public docs. It was resolved by rewriting the unpublished history (DEC-0005). The text came from repository metadata the
+  agent had read, not from anything Billy supplied for publication.
+- **Scope:** global · **Confidence:** high · **Learned:** 2026-10-01 · **Status:** active
+- **Applies to capabilities:** all
+
+Before putting anything about another project into a public repository, check that project's
+visibility. Prefer what the owner wrote for this purpose. Private metadata (descriptions, names,
+strategy) counts as private content. Run `tools/prepublish_check.py` and a manual review before every push.

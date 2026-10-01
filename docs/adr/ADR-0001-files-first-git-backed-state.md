@@ -1,6 +1,6 @@
 # ADR-0001 — Files-first, git-backed durable state
 
-- **Status:** accepted
+- **Status:** accepted · owner-accepted 2026-10-01 (DEC-0004)
 - **Date:** 2026-10-01
 - **Decision level:** D3
 - **Decided by:** orchestrator (founding architect, OOS-0001)

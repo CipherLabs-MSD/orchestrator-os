@@ -8,7 +8,7 @@ dependencies, and `tools/validate.py` checks this. Questions: [`memory/OPEN_QUES
 
 | ID | Title | M | Status | Depends on | Blocked by (questions) | Expected level |
 |---|---|---|---|---|---|---|
-| OOS-0001 | Foundation: architecture, kernel/domain separation, models, policies, schemas, backlog, validator | M0 | verifying | — | — | D3 |
+| OOS-0001 | Foundation: architecture, kernel/domain separation, models, policies, schemas, backlog, validator | M0 | done | — | — | D3 |
 | OOS-0002 | Runtime, language and execution-mode decision (spike + ADR) | M1 | ready | OOS-0001 | — | D3 |
 | OOS-0003 | Record store and schema validation library | M1 | proposed | OOS-0002 | — | D2 |
 | OOS-0004 | Task graph engine: states, ready-set, DAG checks, revisions; per-project storage layout | M1 | proposed | OOS-0003 | — | D3 |
@@ -17,10 +17,10 @@ dependencies, and `tools/validate.py` checks this. Questions: [`memory/OPEN_QUES
 | OOS-0007 | Execution backend contract + first headless adapter | M1 | proposed | OOS-0002, OOS-0003 | — | D3 |
 | OOS-0008 | Dispatcher, Workspace manager (software binding: worktrees) and Policy Guard v0 | M1 | proposed | OOS-0007 | — | D3 |
 | OOS-0009 | Verifier v0: composed gates, version-bound evidence collection | M1 | proposed | OOS-0004, OOS-0008, OOS-0018 | — | D2 |
-| OOS-0010 | Core loop v0 on a sandbox repo: one full iteration, digest, circuit breaker | M1 | proposed | OOS-0005, OOS-0006, OOS-0009 | OQ-003, OQ-005 | D3 |
+| OOS-0010 | Core loop v0 on a sandbox repo: one full iteration, digest, circuit breaker | M1 | proposed | OOS-0005, OOS-0006, OOS-0009 | — | D3 |
 | OOS-0011 | Memory Manager: decision log, learnings, failed approaches, handoff, staleness | M2 | proposed | OOS-0010 | — | D2 |
-| OOS-0012 | User-context import tooling + first curated import (with Billy) | M2 | proposed | OOS-0003 | OQ-001 | D4 |
-| OOS-0013 | Role Composer + Backend Router + second backend adapter | M3 | proposed | OOS-0010 | OQ-004 | D3 |
+| OOS-0012 | Private user-context store (orchestrator-context) + import tooling + first curated import (with Billy) | M2 | proposed | OOS-0003 | — | D4 |
+| OOS-0013 | Role Composer + Backend Router + second backend adapter | M3 | proposed | OOS-0010 | — | D3 |
 | OOS-0014 | Parallel execution: workspace pool, leases, change-set conflict handling | M3 | proposed | OOS-0013 | — | D3 |
 | OOS-0015 | Independent review stance + conflicting-recommendation resolution | M3 | proposed | OOS-0013 | — | D2 |
 | OOS-0016 | Sandbox pilot: drive a throwaway project across a milestone; calibrate D-levels | M4 | proposed | OOS-0011, OOS-0014, OOS-0015 | — | D3 |
@@ -39,11 +39,11 @@ dependencies are done.
 | 0 | OOS-0001 | — |
 | 1 | OOS-0002 | 0001 |
 | 2 | OOS-0003 | 0002 |
-| 3 | OOS-0004 · OOS-0007 · OOS-0012 · OOS-0018 | 0003 · 0002+0003 · 0003 · 0003 (OQ-001) |
+| 3 | OOS-0004 · OOS-0007 · OOS-0012 · OOS-0018 | 0003 · 0002+0003 · 0003 · 0003 |
 | 4 | OOS-0005 · OOS-0006 · OOS-0008 | 0003+0018 · 0003+0004+0018 · 0007 |
 | 5 | OOS-0009 | 0004+0008+0018 |
-| 6 | OOS-0010 | 0005+0006+0009 (OQ-003, OQ-005) |
-| 7 | OOS-0011 · OOS-0013 | 0010 · 0010 (OQ-004) |
+| 6 | OOS-0010 | 0005+0006+0009 |
+| 7 | OOS-0011 · OOS-0013 | 0010 · 0010 |
 | 8 | OOS-0014 · OOS-0015 | 0013 · 0013 |
 | 9 | OOS-0016 | 0011+0014+0015 |
 | 10 | OOS-0017 · OOS-0020 | 0016+0012 · 0016+0018 (OQ-007) |
@@ -56,7 +56,7 @@ Critical path: 0001 → 0002 → 0003 → 0007 → 0008 → 0009 → 0010 → 00
 
 ## OOS-0001: Foundation
 
-**Status:** verifying (awaiting Billy's review) · **Milestone:** M0 · **Level:** D3 (founding ADRs)
+**Status:** **DONE** (2026-10-01) · owner-accepted ([DEC-0004](../memory/DECISIONS/DEC-0004-oos-0001-owner-acceptance.md)) · PRIV-0001 resolved ([DEC-0005](../memory/DECISIONS/DEC-0005-priv-0001-history-rewrite.md)) · **Milestone:** M0 · **Level:** D3 (founding ADRs) · owner policy: [ADR-0007](../docs/adr/ADR-0007-initial-owner-policy.md)
 
 **Objective.** Establish the architectural and project-management foundation: vision,
 architecture, the models for decisions, memory, personal context, context routing, task graph,

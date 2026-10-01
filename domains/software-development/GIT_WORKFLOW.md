@@ -16,7 +16,7 @@ Git provides two things for software projects (including OOS itself):
 
 | Branch | Purpose | Who writes |
 |---|---|---|
-| `main` | canonical, **protected** | merge via reviewed PR only. Billy is the default merge authority ([DECISION_ENGINE §6](../../docs/DECISION_ENGINE.md#6-integration-authority-is-separate-from-decision-authority)) |
+| `main` | canonical, **protected** | merge via reviewed PR only. **Billy alone merges** (owner policy, ADR-0007) ([DECISION_ENGINE §6](../../docs/DECISION_ENGINE.md#6-integration-authority-is-separate-from-decision-authority)) |
 | `oos-NNNN/<slug>` | work for one backlog item (this repo) | agents/humans |
 | `task/<task-id>/<slug>` | one orchestrated task in a managed project | one agent run (lease-protected) |
 | `integrate/<milestone-or-epic>` | optional staging of several verified task branches before a PR to `main` | orchestrator |

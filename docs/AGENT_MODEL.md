@@ -103,7 +103,8 @@ eligible = backends where status = integrated
                      ∧ id ∈ profile.backends_allowed                 (authority)
                      ∧ supports ⊇ role.backend_requirements          (available tools)
                      ∧ context_window ≥ package size                 (context requirements)
-                     ∧ trust.data_policy_ok_for ∋ project.data_class (data clearance)
+                     ∧ trust.data_policy_ok_for ∋ project.data_class (data clearance, per owner policy)
+                     ∧ (no user context in package ∨ trust.user_context_ok)
 choose argmax( fit(strengths, capabilities, task characteristics)
                − λ·relative_cost − κ·latency_penalty − μ·(1 − reliability) )
 prefer a different backend than the producer for review stances

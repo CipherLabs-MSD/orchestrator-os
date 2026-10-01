@@ -125,7 +125,9 @@ ESC-NNNN
 While a D4 is open, the orchestrator **keeps working** on unblocked parts of the graph. It
 may run cheap, reversible spikes that inform the decision. It never commits to an option.
 
-Escalations are batched into a digest. An interrupt is reserved for blocking or
+**Channel (owner policy, ADR-0007):** initially Billy in the active Orchestrator session. Other
+channels (notifications, digests, email, messaging, dashboards) can be added later as entries in
+`owner_policy.escalation.channels`. When digests exist, escalations are batched, and an interrupt is reserved for blocking or
 time-critical items (see `context/WORKING_STYLE.md` once populated). Domains may add
 escalation rules, for example "always interrupt for any live-effect proposal".
 
@@ -136,8 +138,8 @@ Deciding something autonomously is different from integrating it into canonical 
 
 | Phase | Who integrates |
 |---|---|
-| Initial (default) | Billy only |
-| Earned (per project, granted by Billy as a D4 decision) | Orchestrator may integrate D1/D2 changes whose gates pass. D3 needs Billy's approval or a review window. |
+| Initial (**in force**, ADR-0007) | Billy only. Agents may prepare, push permitted branches, open PRs and recommend merge when a task authorizes it, but never merge. |
+| Earned (per project; only after an explicit owner decision) | Orchestrator may integrate D1/D2 changes whose gates pass. D3 needs Billy's approval or a review window. |
 
 Software binding: [GIT_WORKFLOW](../domains/software-development/GIT_WORKFLOW.md).
 
