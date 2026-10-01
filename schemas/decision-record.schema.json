@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/decision-record.schema.json",
+  "title": "Decision record",
+  "description": "A classified decision (D1-D4). D2 lives in memory/DECISIONS, D3 as an ADR, D4 as an escalation then a decision with decided_by=billy. See docs/DECISION_ENGINE.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "level", "scores", "decision_class", "status", "decided_by", "date"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^(DEC|ESC)-[0-9]{4}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "task_id": { "type": "string" },
+    "level": { "type": "string", "enum": ["D1", "D2", "D3", "D4"] },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["impact", "reversibility", "uncertainty", "cost", "security", "vision_alignment"],
+      "properties": {
+        "impact": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "reversibility": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "uncertainty": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "cost": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "security": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "vision_alignment": { "type": "integer", "minimum": 0, "maximum": 3 }
+      }
+    },
+    "decision_class": { "type": "string", "description": "A class id from orchestration/decision_policy.json class_floors, or 'general'." },
+    "dominant_rule": { "type": "string" },
+    "context": { "type": "string" },
+    "options": { "type": "array", "items": { "type": "string" } },
+    "choice": { "type": "string" },
+    "rationale": { "type": "string" },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "dissent": { "type": "array", "items": { "type": "string" } },
+    "implementing_commits": { "type": "array", "items": { "type": "string" } },
+    "adr": { "type": ["string", "null"] },
+    "escalation": {
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "recommendation": { "type": "string" },
+        "blocked": { "type": "array", "items": { "type": "string" } },
+        "continues": { "type": "array", "items": { "type": "string" } },
+        "cost_of_waiting": { "type": "string" }
+      }
+    },
+    "status": { "type": "string", "enum": ["proposed", "escalated", "decided", "superseded", "reverted"] },
+    "decided_by": { "type": "string", "enum": ["orchestrator", "billy", "contributor"] },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "superseded_by": { "type": ["string", "null"] }
+  }
+}

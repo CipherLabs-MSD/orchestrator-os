@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/evidence.schema.json",
+  "title": "Evidence record",
+  "description": "Independently collected proof bound to a commit. Agent self-reports are not evidence. See docs/VERIFICATION.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "task_id", "commit_sha", "collected_by", "collected_at", "result"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^EVD-[0-9]{4,}$" },
+    "type": { "type": "string", "enum": ["test_result", "build_output", "static_analysis", "runtime_check", "screenshot", "benchmark", "review", "human_acceptance", "external", "diff_inspection"] },
+    "task_id": { "type": "string" },
+    "commit_sha": { "type": "string" },
+    "collected_by": { "type": "string", "description": "verifier | role id | billy. Must not be the producing run." },
+    "collected_at": { "type": "string" },
+    "command": { "type": "string" },
+    "exit_code": { "type": ["integer", "null"] },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "summary": { "type": "string" },
+    "result": { "type": "string", "enum": ["pass", "fail", "inconclusive"] },
+    "trust": { "type": "string", "enum": ["project_truth", "agent_output", "untrusted_external", "principal"] }
+  }
+}

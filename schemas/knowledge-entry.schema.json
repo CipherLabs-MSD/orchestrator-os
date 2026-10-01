@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/knowledge-entry.schema.json",
+  "title": "User context knowledge entry",
+  "description": "One curated, provenance-tracked statement about the user (Billy). Always evidence, never a project requirement. See docs/PERSONAL_CONTEXT_MODEL.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "statement", "kind", "category", "scope", "strength", "confidence", "source", "learned", "status", "applies_to_capabilities"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^CTX-[0-9]{4}$" },
+    "statement": { "type": "string", "minLength": 1 },
+    "kind": { "type": "string", "enum": ["user_preference", "user_fact"] },
+    "category": { "type": "string", "enum": ["profile", "creative", "working_style", "decision_preference", "long_term_vision"] },
+    "scope": { "type": "string", "pattern": "^(global|domain:[a-z0-9_-]+|project:[A-Za-z0-9_-]+)$" },
+    "strength": { "type": "string", "enum": ["weak", "moderate", "strong"] },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "source": { "type": "string", "minLength": 1, "description": "Provenance: export/conversation reference, 'stated-directly', and 'confirmed-by-billy' when reviewed." },
+    "learned": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "last_confirmed": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "applies_to_capabilities": { "type": "array", "items": { "type": "string" } },
+    "conflicts": { "type": "array", "items": { "type": "string", "pattern": "^CTX-[0-9]{4}$" } },
+    "superseded_by": { "type": ["string", "null"], "pattern": "^CTX-[0-9]{4}$" },
+    "status": { "type": "string", "enum": ["proposed", "active", "superseded", "retired", "disputed"] }
+  }
+}

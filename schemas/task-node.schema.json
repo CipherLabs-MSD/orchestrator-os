@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/task-node.schema.json",
+  "title": "Task graph node",
+  "description": "A node in a managed project's task graph (GOAL > OUTCOME > MILESTONE > EPIC > TASK > VALIDATION). See docs/TASK_GRAPH.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "node_type", "title", "state"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[A-Z]+-[0-9]{4,}$" },
+    "node_type": { "type": "string", "enum": ["goal", "outcome", "milestone", "epic", "task", "validation"] },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "parent": { "type": ["string", "null"] },
+    "depends_on": { "type": "array", "items": { "type": "string" } },
+    "validates": { "type": "array", "items": { "type": "string" } },
+    "assumes": { "type": "array", "items": { "type": "string" } },
+    "informs": { "type": "array", "items": { "type": "string" } },
+    "task_type": { "type": "string", "description": "Key into verification_gates.json task_type_gates (tasks only)." },
+    "capabilities": { "type": "array", "items": { "type": "string" } },
+    "write_scope": { "type": "array", "items": { "type": "string" } },
+    "acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+    "out_of_scope": { "type": "array", "items": { "type": "string" } },
+    "gates": { "type": "array", "items": { "type": "string", "pattern": "^G-[A-Z]+$" } },
+    "state": { "type": "string", "enum": ["proposed", "ready", "in_progress", "verifying", "done", "blocked", "failed", "cancelled", "superseded"] },
+    "needs_replan": { "type": "boolean" },
+    "attempts": { "type": "integer", "minimum": 0 },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "superseded_by": { "type": ["string", "null"] }
+  }
+}

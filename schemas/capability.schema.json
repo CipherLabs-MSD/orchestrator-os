@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/capability.schema.json",
+  "title": "Capability",
+  "description": "A descriptive kind of work. Grants no authority. See docs/AGENT_MODEL.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "description", "context_profile", "default_verification_gates"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "typical_task_types": { "type": "array", "items": { "type": "string" } },
+    "context_profile": { "type": "string", "description": "Key into orchestration/context_routing.json profiles." },
+    "default_verification_gates": { "type": "array", "items": { "type": "string", "pattern": "^G-[A-Z]+$" } },
+    "risk_notes": { "type": "string" },
+    "related": { "type": "array", "items": { "type": "string" } }
+  }
+}

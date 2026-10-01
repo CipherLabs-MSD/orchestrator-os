@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/verification-gate.schema.json",
+  "title": "Verification gate",
+  "description": "A named set of evidence requirements a task must satisfy before it can be DONE. See docs/VERIFICATION.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "passes_when", "evidence_types"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^G-[A-Z]+$" },
+    "name": { "type": "string" },
+    "passes_when": { "type": "string" },
+    "evidence_types": { "type": "array", "items": { "type": "string" } },
+    "implicit": { "type": "boolean", "description": "Applies to every task regardless of type." },
+    "removal_level": { "type": "string", "enum": ["D3", "D4"] }
+  }
+}

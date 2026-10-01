@@ -1,0 +1,44 @@
+<!-- context-file
+category: long_term_vision
+status: placeholder
+entries: 0
+-->
+# Long-Term Vision
+
+> **PLACEHOLDER: NOT YET SUPPLIED.** This file contains **no information about Billy**.
+> Agents must not infer or invent entries. Populate only via [IMPORT_PROTOCOL.md](IMPORT_PROTOCOL.md).
+
+**Purpose:** Long-horizon ambitions that should shape cross-project choices (reuse, portfolio, brand).
+
+**Typical consumers:** intake, product_analysis, architecture (only at milestone planning). The Context Router selects individual entries by
+`applies_to_capabilities` and `scope`. It never sends this whole file.
+
+## Prompts for curation
+
+These are the *kinds* of entries that belong here. They are questions, not answers.
+
+- [ ] Multi-year goals the projects serve
+- [ ] How projects relate to each other (shared platforms, brands, audiences)
+- [ ] What success looks like for Orchestrator OS itself, in Billy's words
+- [ ] Ambitions that should make OOS prefer reusable over one-off solutions
+
+## Entries
+
+_None yet._
+
+<!-- Entry format (see docs/PERSONAL_CONTEXT_MODEL.md §3):
+### CTX-NNNN — <short title>
+- statement:
+- kind: user_preference | user_fact
+- category: long_term_vision
+- scope: global | domain:<name> | project:<id>
+- strength: weak | moderate | strong
+- confidence: 0.0–1.0
+- source:
+- learned: YYYY-MM-DD
+- last_confirmed: YYYY-MM-DD
+- applies_to_capabilities: []
+- conflicts: []
+- superseded_by: null
+- status: proposed | active | superseded | retired | disputed
+-->

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/context-package.schema.json",
+  "title": "Context package",
+  "description": "The scoped context delivered to one agent run, with a manifest explaining every inclusion. See docs/CONTEXT_ROUTER.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["package_id", "task_id", "role_id", "built_at_sha", "task_brief", "authority", "constraints", "manifest"],
+  "properties": {
+    "package_id": { "type": "string" },
+    "task_id": { "type": "string" },
+    "role_id": { "type": "string" },
+    "built_at_sha": { "type": "string", "description": "Commit the project truth was read at; stale if HEAD moves." },
+    "task_brief": {
+      "type": "object",
+      "required": ["objective", "acceptance_criteria", "out_of_scope", "evidence_required"],
+      "properties": {
+        "objective": { "type": "string" },
+        "acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+        "out_of_scope": { "type": "array", "items": { "type": "string" } },
+        "evidence_required": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "required": ["decision_ceiling", "write_scope", "tool_permissions"],
+      "properties": {
+        "decision_ceiling": { "type": "string", "enum": ["D1", "D2", "D3"] },
+        "write_scope": { "type": "array", "items": { "type": "string" } },
+        "tool_permissions": { "type": "array", "items": { "type": "string" } },
+        "escalation_instructions": { "type": "string" }
+      }
+    },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "project_truth": { "type": "array", "items": { "type": "string" } },
+    "memory": { "type": "array", "items": { "type": "string" } },
+    "user_context": { "type": "array", "items": { "type": "string", "pattern": "^CTX-[0-9]{4}$" } },
+    "general_knowledge": { "type": "array", "items": { "type": "string" } },
+    "manifest": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "layer", "trust", "reason"],
+        "properties": {
+          "ref": { "type": "string" },
+          "layer": { "type": "string", "enum": ["policy", "user_context", "project_truth", "general_knowledge", "orchestrator_state"] },
+          "trust": { "type": "string", "enum": ["trusted_policy", "principal", "project_truth", "user_context", "agent_output", "untrusted_external"] },
+          "reason": { "type": "string" },
+          "included": { "type": "boolean" },
+          "token_cost": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

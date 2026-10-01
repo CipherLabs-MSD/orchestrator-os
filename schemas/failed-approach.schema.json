@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/failed-approach.schema.json",
+  "title": "Failed approach",
+  "description": "A recorded dead end so future agents do not repeat it blindly. See docs/FAILURE_HANDLING.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "hypothesis", "tried", "result", "why_failed", "retry_when", "date"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^FAILED-[0-9]{4}$" },
+    "title": { "type": "string" },
+    "task_id": { "type": "string" },
+    "hypothesis": { "type": "string" },
+    "tried": { "type": "array", "items": { "type": "string" } },
+    "result": { "type": "string" },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "why_failed": { "type": "string" },
+    "retry_when": { "type": "string", "description": "Condition under which retrying is reasonable; 'never' allowed with justification." },
+    "scope": { "type": "string" },
+    "capabilities": { "type": "array", "items": { "type": "string" } },
+    "files": { "type": "array", "items": { "type": "string" } },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+  }
+}

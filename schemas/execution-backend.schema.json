@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/execution-backend.schema.json",
+  "title": "Execution backend descriptor",
+  "description": "A system that can execute an agent run (CLI agent, API model, local model, human). Declaring a backend does not integrate it. See docs/AGENT_MODEL.md and ADR-0004.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "vendor", "kind", "status", "supports", "trust"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
+    "vendor": { "type": "string" },
+    "kind": { "type": "string", "enum": ["cli_agent", "api_model", "local_model", "human"] },
+    "status": { "type": "string", "enum": ["declared", "integrated", "deprecated"] },
+    "strengths": { "type": "array", "items": { "type": "string" }, "description": "Capability ids; evidence-based, updated from outcomes." },
+    "context_window_tokens": { "type": ["integer", "null"], "minimum": 0 },
+    "supports": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tools": { "type": "boolean" },
+        "file_edit": { "type": "boolean" },
+        "shell": { "type": "boolean" },
+        "web": { "type": "boolean" },
+        "vision": { "type": "boolean" },
+        "worktree": { "type": "boolean" },
+        "headless": { "type": "boolean" }
+      }
+    },
+    "cost_model": {
+      "type": "object",
+      "properties": {
+        "unit": { "type": "string" },
+        "relative_cost": { "type": "string", "enum": ["low", "medium", "high", "unknown"] }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "max_runtime_s": { "type": ["integer", "null"] },
+        "concurrency": { "type": ["integer", "null"] }
+      }
+    },
+    "trust": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["data_policy_ok_for"],
+      "properties": {
+        "data_policy_ok_for": { "type": "array", "items": { "type": "string", "enum": ["public", "private", "secret"] } }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

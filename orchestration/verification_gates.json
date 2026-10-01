@@ -1,0 +1,31 @@
+{
+  "version": "0.1.0",
+  "description": "Verification gates and task-type requirements. Human-readable source: docs/VERIFICATION.md. Schema for gates: schemas/verification-gate.schema.json.",
+  "gates": [
+    { "id": "G-SCOPE", "name": "Scope and hygiene", "passes_when": "Diff only touches declared write scope; no secrets; no protected paths changed.", "evidence_types": ["diff_inspection"], "implicit": true, "removal_level": "D4" },
+    { "id": "G-TEST", "name": "Tests", "passes_when": "Relevant tests pass at the commit; new behaviour has new tests; no regressions.", "evidence_types": ["test_result"], "removal_level": "D3" },
+    { "id": "G-BUILD", "name": "Build", "passes_when": "Clean build from the commit.", "evidence_types": ["build_output"], "removal_level": "D3" },
+    { "id": "G-STATIC", "name": "Static analysis", "passes_when": "No new findings at or above configured severity.", "evidence_types": ["static_analysis"], "removal_level": "D3" },
+    { "id": "G-REVIEW", "name": "Independent review", "passes_when": "Independent review stance approves; findings addressed or waived with log.", "evidence_types": ["review"], "removal_level": "D3" },
+    { "id": "G-RUNTIME", "name": "Runtime check", "passes_when": "Scripted runtime check passes.", "evidence_types": ["runtime_check"], "removal_level": "D3" },
+    { "id": "G-VISUAL", "name": "Visual check", "passes_when": "Screenshots match stated expectation, judged by vision-capable role or Billy.", "evidence_types": ["screenshot", "review"], "removal_level": "D3" },
+    { "id": "G-BENCH", "name": "Benchmark", "passes_when": "Metric within threshold of baseline.", "evidence_types": ["benchmark"], "removal_level": "D3" },
+    { "id": "G-MIGRATION", "name": "Migration safety", "passes_when": "Dry run on copy succeeds; rollback tested; counts/checksums reconciled.", "evidence_types": ["runtime_check", "test_result"], "removal_level": "D4" },
+    { "id": "G-SECURITY", "name": "Security", "passes_when": "Security review passes; dependency audit clean at threshold.", "evidence_types": ["review", "static_analysis"], "removal_level": "D4" },
+    { "id": "G-HUMAN", "name": "Human acceptance", "passes_when": "Billy accepts.", "evidence_types": ["human_acceptance"], "removal_level": "D4" },
+    { "id": "G-DOCS", "name": "Documentation", "passes_when": "Validator passes; internal links resolve; review confirms content addresses the task.", "evidence_types": ["test_result", "review"], "removal_level": "D3" }
+  ],
+  "task_type_gates": {
+    "bug_fix": ["G-TEST", "G-REVIEW"],
+    "feature_backend": ["G-TEST", "G-BUILD", "G-STATIC", "G-REVIEW"],
+    "feature_ui": ["G-TEST", "G-BUILD", "G-VISUAL", "G-REVIEW"],
+    "refactor": ["G-TEST", "G-STATIC", "G-REVIEW"],
+    "migration": ["G-MIGRATION", "G-TEST", "G-REVIEW"],
+    "security_sensitive": ["G-SECURITY", "G-TEST", "G-REVIEW"],
+    "performance": ["G-BENCH", "G-TEST"],
+    "documentation": ["G-DOCS"],
+    "design": ["G-DOCS", "G-REVIEW"],
+    "spike": [],
+    "outcome_validation": ["G-HUMAN"]
+  }
+}

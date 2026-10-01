@@ -1,0 +1,58 @@
+{
+  "version": "0.1.0",
+  "description": "Context routing profiles. Human-readable source: docs/CONTEXT_ROUTER.md. user_context_categories lists the ONLY categories of CTX entries a profile may receive; entries must additionally match scope and applies_to_capabilities.",
+  "always_include": ["task_brief", "authority", "constraints", "failed_approaches_touching_scope"],
+  "control_plane_user_context": {
+    "description": "Categories the orchestrator itself (Intake, Decision Engine, Escalation) may read when planning, weighing trade-offs or formatting escalations. These are never forwarded wholesale to agent roles.",
+    "categories": ["profile", "working_style", "decision_preference", "long_term_vision"]
+  },
+  "profiles": {
+    "architecture": {
+      "user_context_categories": ["decision_preference", "long_term_vision"],
+      "user_context_conditions": { "long_term_vision": "milestone_planning_only" },
+      "project_truth": ["adr_index", "requirements", "constraints", "assumptions_in_force"],
+      "memory": ["learnings", "failed_approaches", "decisions"]
+    },
+    "engineering_core": {
+      "user_context_categories": [],
+      "project_truth": ["files_in_scope", "related_adrs", "decisions_touching_scope"],
+      "memory": ["learnings", "failed_approaches"]
+    },
+    "creative_engineering": {
+      "user_context_categories": ["creative", "working_style"],
+      "project_truth": ["files_in_scope", "design_adrs", "ui_constraints"],
+      "memory": ["learnings", "failed_approaches"]
+    },
+    "creative": {
+      "user_context_categories": ["creative", "working_style"],
+      "project_truth": ["requirements", "design_adrs", "outcomes"],
+      "memory": ["learnings", "decisions"]
+    },
+    "data": {
+      "user_context_categories": [],
+      "project_truth": ["schema_adrs", "files_in_scope", "data_constraints"],
+      "memory": ["failed_approaches", "learnings"]
+    },
+    "verification": {
+      "user_context_categories": ["working_style"],
+      "user_context_conditions": { "working_style": "review_habits_only" },
+      "project_truth": ["acceptance_criteria", "gate_definitions", "diff_under_review"],
+      "memory": ["learnings", "failed_approaches"]
+    },
+    "security": {
+      "user_context_categories": [],
+      "project_truth": ["security_policy", "trust_boundaries", "files_in_scope"],
+      "memory": ["failed_approaches", "learnings"]
+    },
+    "product": {
+      "user_context_categories": ["creative", "decision_preference", "long_term_vision"],
+      "project_truth": ["goals", "outcomes", "requirements"],
+      "memory": ["decisions", "open_questions"]
+    },
+    "research": {
+      "user_context_categories": [],
+      "project_truth": ["question_under_research", "constraints"],
+      "memory": ["failed_approaches", "open_questions"]
+    }
+  }
+}

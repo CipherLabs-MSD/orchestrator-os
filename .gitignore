@@ -1,0 +1,32 @@
+# Secrets and local credentials. Never commit these (docs/SECURITY_AND_TRUST.md §4)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+secrets/
+credentials*.json
+
+# Raw user-context source material. It must never be committed (context/IMPORT_PROTOCOL.md)
+context/raw/
+context/private/
+*.chatgpt-export.*
+
+# Orchestrator runtime state and worktrees. These are operational, not project truth.
+.oos-workspace/
+worktrees/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
