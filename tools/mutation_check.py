@@ -57,6 +57,8 @@ MUTATIONS = {
     "AI backend cleared for secret": lambda r: jedit(r, "orchestration/backends.json", lambda d: d["backends"][0]["trust"]["data_policy_ok_for"].append("secret")),
     "public context file marked curated": lambda r: tedit(r, "context/WORKING_STYLE.md", lambda s: s.replace("status: placeholder", "status: curated", 1)),
     "deferred second domain made operational": lambda r: jedit(r, FIN, lambda d: d.__setitem__("operational", True)),
+    "unlabelled spike source": lambda r: (r / "spikes/oos-0002/extra.py").write_text("print('x')\n", encoding="utf-8"),
+    "kernel references spike code": lambda r: jedit(r, KPOL, lambda d: d.__setitem__("note", "see spikes/oos-0002 runner")),
     "backlog cycle": lambda r: jedit(r, "project/backlog.json", lambda d: d["items"][1]["depends_on"].append("OOS-0019")),
 }
 

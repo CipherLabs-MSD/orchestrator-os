@@ -10,7 +10,7 @@ has) or `orchestrator` (resolvable by an agent within its authority, in the name
 | OQ-003 | How should escalations and digests reach Billy, and who holds merge authority at start? | billy | — | **resolved** (ADR-0007: active session; Billy-only merge) |
 | OQ-004 | Which execution backends may receive private project code or user context? | billy | — | **resolved** (ADR-0007: Claude + Codex, task-relevant, never secrets) |
 | OQ-005 | Spending and usage budget for autonomous runs | billy | — | **resolved** (ADR-0007: 0 SEK; every cost escalates) |
-| OQ-006 | Implementation language and runtime for the control plane | orchestrator (OOS-0002, D3). Billy's preference welcome as evidence. | OOS-0003 | open |
+| OQ-006 | Implementation language and runtime for the control plane | orchestrator (OOS-0002, D3). Billy's preference welcome as evidence. | — | **resolved** (ADR-0008: Python ≥ 3.12, hybrid model; pending owner review) |
 | OQ-007 | Which domain becomes the second *operational* package, and when? (Finance is the documented candidate.) | billy | OOS-0020 | **deferred** by Billy (2026-10-01); not selected |
 
 ---
@@ -55,6 +55,7 @@ has) or `orchestrator` (resolvable by an agent within its authority, in the name
   spends money is D4 (the current policy).
 
 ### OQ-006 — Implementation runtime
+- **Resolved 2026-10-01 by OOS-0002 ([ADR-0008](../docs/adr/ADR-0008-runtime-and-execution-model.md)), D3, pending Billy's review of the PR.**
 - Resolved in OOS-0002 by spike and ADR. Billy may state a preference, which would be recorded as
   evidence, not as a requirement.
 

@@ -58,6 +58,7 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 | [`orchestration/backends.json`](orchestration/backends.json) | Execution backend (agent provider) registry |
 | [`domains/`](domains/) | **Domain packages**: `software-development` (draft) and `finance` (illustrative only) |
 | [`schemas/`](schemas/) | JSON Schemas for every durable record type |
+| [`spikes/`](spikes/) | **Disposable** experiments that produce evidence for ADRs (OOS-0002 runtime spike). Never a dependency. |
 | [`tools/`](tools/) | `validate.py`, a stdlib-only consistency checker |
 | [`tests/`](tests/) | Tests for the validator and the foundation artifacts |
 

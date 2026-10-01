@@ -46,3 +46,26 @@ misses exactly the contamination it targets. Mutation-test such checks (tools/mu
 Before putting anything about another project into a public repository, check that project's
 visibility. Prefer what the owner wrote for this purpose. Private metadata (descriptions, names,
 strategy) counts as private content. Run `tools/prepublish_check.py` and a manual review before every push.
+
+### LRN-0006 — Worker descendants keep stdio pipes open
+- **Evidence:** OOS-0002 E2-H and the first E4 run, which stalled ~60 s on `capture_output` until a grandchild exited.
+- **Scope:** global · **Confidence:** high · **Learned:** 2026-10-01 · **Status:** active
+- **Applies to capabilities:** backend, devops
+
+Pipe EOF is not "worker finished". Wait for process exit, then reap the whole tree. Never let a
+supervisor block on EOF from a process whose descendants may live on.
+
+### LRN-0007 — Windows: piped stdio is not UTF-8 by default; `os.kill(pid, 0)` is not a probe
+- **Evidence:** OOS-0002 E6. Piped stdin decoded as cp1252 and mangled a UTF-8 filename sent by Node.
+  `os.kill(pid, 0)` (signal 0 = CTRL_C_EVENT) returned silently for live and dead processes alike.
+- **Scope:** global · **Confidence:** high · **Learned:** 2026-10-01 · **Status:** active
+- **Applies to capabilities:** backend, devops, testing
+
+Declare UTF-8 on both ends of every stdio protocol. Probe liveness with OpenProcess/GetExitCodeProcess on Windows.
+
+### LRN-0008 — Process-tree ownership differs sharply by runtime on Windows
+- **Evidence:** OOS-0002 E3/E4. Python + stdlib ctypes Job Object: no orphans even when OOS crashes.
+  Node: direct children die with the parent (libuv, inferred) but grandchildren survive, and `taskkill /T`
+  cannot find descendants once their parent has exited.
+- **Scope:** project · **Confidence:** high (Windows), unverified (macOS) · **Learned:** 2026-10-01 · **Status:** active
+- **Applies to capabilities:** architecture, backend, devops

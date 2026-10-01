@@ -1,0 +1,367 @@
+{
+  "spike": "OOS-0002",
+  "recorded": "2026-10-01",
+  "environment": {
+    "os": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64",
+    "python": "3.10.6",
+    "node": "v22.9.0"
+  },
+  "caveat": "Tiny synthetic workloads on one machine. Architectural evidence only, not performance data.",
+  "python": {
+    "runtime": "python 3.10.6",
+    "platform": "win32",
+    "e1": {
+      "n": 10,
+      "python_cold_start_ms_median": 21.4,
+      "node_cold_start_ms_median": 30.2
+    },
+    "e1_runtime_s": 0.52,
+    "e2": {
+      "wall_s": 1.284,
+      "workers": [
+        {
+          "task_id": "A-ok-fast",
+          "status": "succeeded",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 12,
+          "malformed_events": 0,
+          "event_types": [
+            "progress",
+            "result",
+            "started"
+          ],
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 0.4
+        },
+        {
+          "task_id": "B-ok-slow",
+          "status": "succeeded",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 12,
+          "malformed_events": 0,
+          "event_types": [
+            "progress",
+            "result",
+            "started"
+          ],
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 1.278
+        },
+        {
+          "task_id": "C-hang",
+          "status": "timed_out",
+          "retryable": true,
+          "exit_code": 1,
+          "events": 2,
+          "malformed_events": 0,
+          "event_types": [
+            "progress",
+            "started"
+          ],
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 1.029
+        },
+        {
+          "task_id": "D-cancel",
+          "status": "cancelled",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 3,
+          "malformed_events": 0,
+          "event_types": [
+            "cancelled",
+            "progress",
+            "started"
+          ],
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 0.544
+        },
+        {
+          "task_id": "E-crash",
+          "status": "crashed",
+          "retryable": true,
+          "exit_code": 3,
+          "events": 4,
+          "malformed_events": 1,
+          "event_types": [
+            "progress",
+            "started"
+          ],
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 0.218
+        },
+        {
+          "task_id": "F-ask",
+          "status": "needs_input",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 13,
+          "malformed_events": 0,
+          "event_types": [
+            "progress",
+            "question",
+            "result",
+            "started"
+          ],
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 0.402
+        },
+        {
+          "task_id": "G-ignores-cancel",
+          "status": "cancelled_forced",
+          "retryable": false,
+          "exit_code": 1,
+          "events": 3,
+          "malformed_events": 0,
+          "event_types": [
+            "progress",
+            "started"
+          ],
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 0.899
+        },
+        {
+          "task_id": "H-leaves-grandchild",
+          "status": "succeeded",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 13,
+          "malformed_events": 0,
+          "event_types": [
+            "grandchild",
+            "progress",
+            "result",
+            "started"
+          ],
+          "descendants_reaped_after_exit": true,
+          "grandchild_alive_after": false,
+          "elapsed_s": 0.897
+        }
+      ]
+    },
+    "e2_runtime_s": 1.29,
+    "e3": {
+      "naive_kill_grandchild_survived": true,
+      "tree_kill_grandchild_survived": false,
+      "mechanism": "Job Object (TerminateJobObject)"
+    },
+    "e3_runtime_s": 1.15,
+    "e4": {
+      "no-job_parent_exit_s": 0.13,
+      "no-job": {
+        "worker": true,
+        "grandchild": true
+      },
+      "job_parent_exit_s": 0.13,
+      "job": {
+        "worker": false,
+        "grandchild": false
+      }
+    },
+    "e4_runtime_s": 1.53,
+    "e5": {
+      "crash_exit_code": 9,
+      "recovery": {
+        "torn_lines": 1,
+        "tasks": {
+          "T1": {
+            "status": "succeeded",
+            "attempt": 1,
+            "key": "T1:17b5aa75",
+            "pid": 128628,
+            "retryable": false,
+            "action": "none (terminal)"
+          },
+          "T2": {
+            "status": "succeeded",
+            "attempt": 1,
+            "key": "T2:250ea159",
+            "pid": 26428,
+            "retryable": false,
+            "action": "none (terminal)"
+          },
+          "T3": {
+            "status": "interrupted",
+            "attempt": 1,
+            "key": "T3:ca8830e8",
+            "pid": 86856,
+            "orphan_was_alive": false,
+            "action": "re-dispatch same idempotency key after workspace check"
+          },
+          "T4": {
+            "status": "interrupted",
+            "attempt": 1,
+            "key": "T4:b345bcba",
+            "pid": 39276,
+            "orphan_was_alive": false,
+            "action": "re-dispatch same idempotency key after workspace check"
+          }
+        }
+      },
+      "resumed": [
+        "T3",
+        "T4"
+      ],
+      "succeeded_count_per_task": {
+        "T1": 1,
+        "T2": 1,
+        "T3": 1,
+        "T4": 1
+      },
+      "every_task_succeeded_exactly_once": true,
+      "torn_lines_tolerated": 1
+    },
+    "e5_runtime_s": 1.32,
+    "e6": {
+      "utf8_worker_status": "succeeded",
+      "utf8_unicode_file_created_correctly": true,
+      "native_worker_status": "succeeded",
+      "native_unicode_file_created_correctly": true,
+      "note": "python runner sends ASCII-escaped JSON (json.dumps default), so both modes survive",
+      "windows_signal0_equals_CTRL_C_EVENT": true,
+      "windows_os_kill_sig0_raised": false,
+      "windows_os_kill_sig0_process_still_alive": true,
+      "windows_os_kill_sig0_on_dead_pid_raised": false
+    },
+    "e6_runtime_s": 0.81
+  },
+  "node": {
+    "runtime": "node v22.9.0",
+    "platform": "win32",
+    "e1": {
+      "n": 10,
+      "node_spawns_python_ms_median": 21.9,
+      "node_cold_start_ms_median": 29
+    },
+    "e1_runtime_s": 0.51,
+    "e2": {
+      "wall_s": 1.819,
+      "workers": [
+        {
+          "task_id": "A-ok-fast",
+          "status": "succeeded",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 12,
+          "malformed_events": 0,
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 0.395
+        },
+        {
+          "task_id": "B-ok-slow",
+          "status": "succeeded",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 12,
+          "malformed_events": 0,
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 1.282
+        },
+        {
+          "task_id": "C-hang",
+          "status": "timed_out",
+          "retryable": true,
+          "exit_code": 1,
+          "events": 2,
+          "malformed_events": 0,
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 1.367
+        },
+        {
+          "task_id": "D-cancel",
+          "status": "cancelled",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 3,
+          "malformed_events": 0,
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 0.551
+        },
+        {
+          "task_id": "E-crash",
+          "status": "crashed",
+          "retryable": true,
+          "exit_code": 3,
+          "events": 4,
+          "malformed_events": 1,
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 0.24
+        },
+        {
+          "task_id": "F-ask",
+          "status": "needs_input",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 13,
+          "malformed_events": 0,
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 0.378
+        },
+        {
+          "task_id": "G-ignores-cancel",
+          "status": "cancelled_forced",
+          "retryable": false,
+          "exit_code": 1,
+          "events": 4,
+          "malformed_events": 0,
+          "descendants_reaped_after_exit": false,
+          "grandchild_alive_after": null,
+          "elapsed_s": 1.293
+        },
+        {
+          "task_id": "H-leaves-grandchild",
+          "status": "succeeded",
+          "retryable": false,
+          "exit_code": 0,
+          "events": 13,
+          "malformed_events": 0,
+          "descendants_reaped_after_exit": true,
+          "grandchild_alive_after": true,
+          "elapsed_s": 1.54
+        }
+      ]
+    },
+    "e2_runtime_s": 1.82,
+    "e3": {
+      "naive_kill_grandchild_survived": true,
+      "tree_kill_grandchild_survived": false,
+      "mechanism": "taskkill /T /F (external tool, while the parent still exists)"
+    },
+    "e3_runtime_s": 1.25,
+    "e4": {
+      "parent_exit_s": 0.08,
+      "after_orchestrator_crash": {
+        "worker": false,
+        "grandchild": true
+      },
+      "direct_children_die_with_node": true,
+      "descendants_survive": true
+    },
+    "e4_runtime_s": 1.13,
+    "e6": {
+      "utf8_worker_status": "succeeded",
+      "utf8_unicode_file_created_correctly": true,
+      "native_worker_status": "succeeded",
+      "native_unicode_file_created_correctly": false,
+      "note": "JSON.stringify sends raw UTF-8; a provider decoding with the locale code page mangles it",
+      "liveness_probe_signal0_on_dead_pid": false
+    },
+    "e6_runtime_s": 0.54
+  }
+}

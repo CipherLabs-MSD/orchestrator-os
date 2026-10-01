@@ -184,6 +184,7 @@ are never concatenated wholesale into a prompt.
 | [ADR-0004](adr/ADR-0004-execution-backend-abstraction.md) | Execution backends sit behind a vendor-neutral contract |
 | [ADR-0005](adr/ADR-0005-evidence-gated-completion.md) | Completion requires gate-specific evidence, verified independently |
 | [ADR-0006](adr/ADR-0006-domain-agnostic-kernel.md) | One domain-agnostic kernel plus domain packages, composed into profiles, instead of separate orchestrator codebases |
+| [ADR-0008](adr/ADR-0008-runtime-and-execution-model.md) | Runtime **Python ≥ 3.12** (stdlib-first, asyncio). **Hybrid execution**: session-oriented resumable runs with a write-ahead journal, and a daemon later as a trigger only. See [EXECUTION_RUNTIME](EXECUTION_RUNTIME.md). |
 | [ADR-0007](adr/ADR-0007-initial-owner-policy.md) | Initial **owner policy** (`orchestration/owner_policy.json`): private context store, in-session escalation, Billy-only merge, provider data policy, 0 SEK spending |
 
 ## 6. Future direction: an orchestrator that generates orchestrators
@@ -197,7 +198,5 @@ and is not built (OOS-0019).
 
 These are tracked in the backlog and in [`memory/OPEN_QUESTIONS.md`](../memory/OPEN_QUESTIONS.md):
 
-- Implementation language and runtime for the control plane (OOS-0002 spike).
-- Whether the orchestrator runs as a long-lived daemon or as scheduled sessions (OOS-0002).
 - Per-project OOS state layout for repository-backed projects (`.oos/` proposed; OQ-002, decided in OOS-0004).
 - Domain package loading and composition implementation (OOS-0018).

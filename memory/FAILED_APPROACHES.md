@@ -13,3 +13,11 @@ Schema: [`schemas/failed-approach.schema.json`](../schemas/failed-approach.schem
   not been consulted before acting. The narrowed cause is apostrophes inside heredoc bodies, even with a
   quoted delimiter. The working pattern is to write the script with the file tool, then run it.
 - **Scope:** project · **Capabilities:** devops · **Date:** 2026-10-01
+
+### FAILED-0002 — Measuring orphan survival with `subprocess.run(capture_output=True)`
+- **Hypothesis:** running the crashing child via `subprocess.run(..., capture_output=True)` returns as soon as the child dies.
+- **Tried:** OOS-0002 E4, first run.
+- **Result:** the call blocked ~60 s, until the orphaned grandchild (which had inherited the pipe) exited. The "no orphans" reading was an artifact.
+- **Why it failed:** inherited pipe handles keep the read end open, so EOF arrives only when the last holder exits.
+- **Retry when:** never for this purpose. Use DEVNULL stdio and wait on process exit.
+- **Scope:** project · **Capabilities:** testing, backend · **Date:** 2026-10-01
