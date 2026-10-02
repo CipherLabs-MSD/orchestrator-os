@@ -9,7 +9,7 @@ dependencies, and `tools/validate.py` checks this. Questions: [`memory/OPEN_QUES
 | ID | Title | M | Status | Depends on | Blocked by (questions) | Expected level |
 |---|---|---|---|---|---|---|
 | OOS-0001 | Foundation: architecture, kernel/domain separation, models, policies, schemas, backlog, validator | M0 | done | — | — | D3 |
-| OOS-0002 | Runtime, language and execution-mode decision (spike + ADR) | M1 | ready | OOS-0001 | — | D3 |
+| OOS-0002 | Runtime, language and execution-mode decision (spike + ADR) | M1 | verifying | OOS-0001 | — | D3 |
 | OOS-0003 | Record store and schema validation library | M1 | proposed | OOS-0002 | — | D2 |
 | OOS-0004 | Task graph engine: states, ready-set, DAG checks, revisions; per-project storage layout | M1 | proposed | OOS-0003 | — | D3 |
 | OOS-0005 | Decision Engine v0: policy classifier, golden tests, escalation records | M1 | proposed | OOS-0003, OOS-0018 | — | D2 |
@@ -104,6 +104,14 @@ platform, ease of driving CLI agents headlessly, JSON Schema tooling, testabilit
 contributor familiarity (`context/` may supply evidence once populated).
 **Out of scope.** Building any component.
 **Gates.** G-DOCS, G-REVIEW.
+
+**Result (2026-10-01, status: verifying, awaiting Billy's review of the PR).**
+- Decision: [ADR-0008](../docs/adr/ADR-0008-runtime-and-execution-model.md). **Python ≥ 3.12** (stdlib-first, asyncio).
+  **Hybrid execution model**: session-oriented resumable runs now, with a scheduler or daemon later as a trigger only.
+- Design constraints for OOS-0003, 0007 and 0008: [EXECUTION_RUNTIME](../docs/EXECUTION_RUNTIME.md).
+- Evidence: [`spikes/oos-0002/`](../spikes/oos-0002/) (disposable), `tests/test_spike_oos0002.py`.
+- Tested on Windows 11 only. macOS is **unverified**, and OOS-0008 must collect macOS evidence.
+- Owner action: install Python 3.12+ on the development machine before OOS-0003 needs it.
 
 ## OOS-0003 to OOS-0020
 

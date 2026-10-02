@@ -96,6 +96,9 @@ cancel(run_id)
 `RunResult.self_report` is stored, but it is **never** evidence of completion. The Verifier
 collects evidence independently.
 
+Runtime-level protocol, terminal states and supervision rules: [EXECUTION_RUNTIME §3–5](EXECUTION_RUNTIME.md#3-provider-run-protocol-runtime-seam-input-to-oos-0007).
+ADR-0008 recommends that OOS-0007 add an event stream (`events(run_id)`) and derive `poll` from it.
+
 ### Selection (Backend Router)
 
 ```

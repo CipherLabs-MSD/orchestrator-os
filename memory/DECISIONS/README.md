@@ -30,3 +30,4 @@ D2 decisions are recorded here as `DEC-NNNN-<slug>.md`. D3 and D4 decisions are 
 | [ADR-0005](../../docs/adr/ADR-0005-evidence-gated-completion.md) | Evidence-gated completion | D3 |
 | [ADR-0006](../../docs/adr/ADR-0006-domain-agnostic-kernel.md) | One domain-agnostic kernel plus domain specialization | D3 |
 | [ADR-0007](../../docs/adr/ADR-0007-initial-owner-policy.md) | Initial owner policy | D4 |
+| [ADR-0008](../../docs/adr/ADR-0008-runtime-and-execution-model.md) | Runtime language and initial execution model | D3 |

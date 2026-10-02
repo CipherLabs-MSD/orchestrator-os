@@ -1,53 +1,33 @@
 # Handoff
 
-- **Session:** OOS-0001 owner acceptance and publication · 2026-10-01 · Claude Code (claude-opus-5-5)
-- **Branch:** `oos-0001/foundation`. This commit is the publication candidate. It is pushed to
-  `CipherLabs-MSD/orchestrator-os` only if every pre-publication check passes (see the session report).
-  `main` does not exist. Billy creates it (below).
+- **Session:** OOS-0002 runtime and execution spike · 2026-10-01 · Claude Code (claude-opus-5-5)
+- **Branch:** `oos-0002/runtime-spike` from `main` @ `7e01119`. Pushed for review. **Not merged** (Billy merges).
 
 ## Done
 
-- **Owner acceptance** of OOS-0001 incl. the addendum: [DEC-0004](DECISIONS/DEC-0004-oos-0001-owner-acceptance.md). **OOS-0001 is DONE.**
-- **Owner policy**: [ADR-0007](../docs/adr/ADR-0007-initial-owner-policy.md) / [`orchestration/owner_policy.json`](../orchestration/owner_policy.json).
-  It covers:
-  - private context store `orchestrator-context` (not created)
-  - escalation in the active session
-  - Billy-only merge
-  - the Claude Code, Claude Agent SDK, Claude API and Codex data policy, clarified to grant no access to secrets
-  - 0 SEK spending
-  - second domain deferred
-- **PRIV-0001 resolved** by rewriting the unpublished history ([DEC-0005](DECISIONS/DEC-0005-priv-0001-history-rewrite.md)).
-  The two foundation commits are unchanged. The addendum is now `3e8d819`, with a generic reference only.
-- A local recovery backup of the pre-rewrite history exists outside the published refs. It is not pushed.
+- Ran executable spikes for the Python and Node runtimes against one fake provider (`spikes/oos-0002/`, **disposable**):
+  E1 cold start, E2 eight concurrent workers, E3 tree kill, E4 orphan behaviour on an OOS crash,
+  E5 journal + crash recovery + resume (Python), E6 Unicode paths, stdio encoding and signal pitfalls.
+- Decision: [ADR-0008](../docs/adr/ADR-0008-runtime-and-execution-model.md). **Python ≥ 3.12** with a **hybrid model**
+  (session-oriented resumable runs; a daemon later only as a trigger).
+- Durable design for later tasks: [`docs/EXECUTION_RUNTIME.md`](../docs/EXECUTION_RUNTIME.md). It covers the provider
+  protocol, the journal transitions, recovery rules, supervision rules and the platform matrix.
+- Validator: a new check that spike code is labelled and isolated. Two new mutations.
+- Evidence tests: `tests/test_spike_oos0002.py`. The Node part runs when `OOS_SPIKE_NODE` is set.
+- Learnings LRN-0006 to LRN-0008. FAILED-0002.
 
-## Verified before publication (2026-10-01)
+## Verified
 
-See the session report for exact output.
-
-- `python tools/validate.py`
-- `python -m unittest discover tests`
-- `python tools/mutation_check.py`
-- `python tools/prepublish_check.py`
-- a fresh clone validated
-- a full-history search for the private text over every publishable commit, including messages
-- a manual semantic review of the full publishable diff
-
-## Owner action (Billy)
-
-The remote had no branches before this push. GitHub normally makes the first pushed branch the default,
-so check the repository's default branch after the push. To establish `main`:
-
-1. Create `main` from the reviewed tip (this is the merge):
-   `git push origin oos-0001/foundation:refs/heads/main`, or use GitHub → Branches → New branch.
-2. GitHub → Settings → General → Default branch → `main`.
-3. GitHub → Settings → Branches (or Rules) → protect `main`: require a pull request before merging, and block force-pushes and deletion.
-4. Optional: delete `oos-0001/foundation` after `main` exists.
+- Windows 11 only (Python 3.10.6, Node 22.9.0). See the session report for exact command output.
+- **macOS: unverified.** POSIX code paths exist but have not run on a Mac.
 
 ## Not done (by instruction)
 
-- No merge. `main` was not created. OOS-0002 is not started. No runtime and no adapters. The private context repo
-  was not created. Demon Codex and FinanceOS were not modified.
+- No production runtime, adapters, daemon, factory or remote workers. FinanceOS and Demon Codex untouched.
+  The private context repo was not created. No real credentials anywhere.
 
 ## Next step
 
-OOS-0002: choose the runtime and language, and decide session-oriented vs. persistent execution (spike + ADR).
+1. Billy reviews and merges the OOS-0002 PR (G-REVIEW). OOS-0002 becomes DONE.
+2. Billy installs Python 3.12+ (ADR-0008).
+3. **OOS-0003**: record store and schema validation library.

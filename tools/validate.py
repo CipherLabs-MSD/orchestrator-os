@@ -23,7 +23,8 @@ REQUIRED_FILES = [
     "docs/VISION.md", "docs/ARCHITECTURE.md", "docs/DOMAIN_PACKAGES.md", "docs/CORE_LOOP.md",
     "docs/KNOWLEDGE_TAXONOMY.md", "docs/MEMORY_MODEL.md", "docs/PERSONAL_CONTEXT_MODEL.md",
     "docs/CONTEXT_ROUTER.md", "docs/DECISION_ENGINE.md", "docs/AGENT_MODEL.md", "docs/TASK_GRAPH.md",
-    "docs/VERIFICATION.md", "docs/FAILURE_HANDLING.md", "docs/SECURITY_AND_TRUST.md",
+    "docs/VERIFICATION.md", "docs/FAILURE_HANDLING.md", "docs/SECURITY_AND_TRUST.md", "docs/EXECUTION_RUNTIME.md",
+    "docs/adr/ADR-0008-runtime-and-execution-model.md", "spikes/oos-0002/README.md",
     "docs/adr/README.md", "docs/adr/TEMPLATE.md", "docs/adr/ADR-0006-domain-agnostic-kernel.md",
     "context/README.md", "context/IMPORT_PROTOCOL.md",
     "memory/README.md", "memory/PROJECT_STATE.md", "memory/DECISIONS/README.md", "memory/LEARNINGS.md",
@@ -800,6 +801,30 @@ def check_kernel_purity() -> list[str]:
     return errors
 
 
+SPIKE_LABEL = "DISPOSABLE SPIKE CODE"
+# Kernel and domain packages must never depend on spikes (meta-tools in tools/ may name them to check them).
+NO_SPIKE_REFERENCE_DIRS = ["orchestration", "schemas", "domains"]
+
+
+def check_spike_isolation() -> list[str]:
+    """Experimental code stays experimental: every spike source carries the DISPOSABLE label,
+    and nothing in the kernel or domain packages references spikes/."""
+    errors = []
+    spikes = ROOT / "spikes"
+    if spikes.is_dir():
+        for p in spikes.rglob("*"):
+            if p.is_file() and p.suffix in (".py", ".mjs", ".js", ".ts") and SPIKE_LABEL not in p.read_text(encoding="utf-8"):
+                errors.append(f"{p.relative_to(ROOT).as_posix()}: spike source lacks the '{SPIKE_LABEL}' label")
+            if p.is_dir() and p.parent == spikes and not (p / "README.md").is_file():
+                errors.append(f"{p.relative_to(ROOT).as_posix()}: spike directory lacks a README")
+    for d in NO_SPIKE_REFERENCE_DIRS:
+        for p in (ROOT / d).rglob("*"):
+            if p.is_file() and p.suffix in (".py", ".json", ".md", ".mjs") and \
+                    re.search(r"spikes[/\\.]|import py_runner|from spikes", p.read_text(encoding="utf-8")):
+                errors.append(f"{p.relative_to(ROOT).as_posix()}: references spike code (spikes are not dependencies)")
+    return errors
+
+
 def scan_secrets(text: str) -> list[str]:
     return [pat.pattern for pat in SECRET_PATTERNS if pat.search(text)]
 
@@ -874,6 +899,7 @@ CHECKS = [
     ("owner policy enforced", check_owner_policy),
     ("context files: placeholders / curated entries", check_context_files),
     ("kernel purity (no domain contamination)", check_kernel_purity),
+    ("spike code isolated and labelled", check_spike_isolation),
     ("no secrets", check_no_secrets),
     ("internal links resolve", check_links),
 ]
