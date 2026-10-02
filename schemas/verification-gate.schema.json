@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/verification-gate.schema.json",
+  "x-oos-schema-version": 1,
   "title": "Verification gate",
   "description": "A named set of evidence requirements a task must satisfy before it can be DONE. See docs/VERIFICATION.md.",
   "type": "object",

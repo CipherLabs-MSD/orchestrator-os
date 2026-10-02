@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/claim.schema.json",
+  "x-oos-schema-version": 1,
   "title": "Project or domain claim",
   "description": "A typed statement owned by a project's truth layer or by a domain package. The kind determines binding force and who may change it. User preferences are NOT claims (see knowledge-entry). See docs/KNOWLEDGE_TAXONOMY.md.",
   "type": "object",
