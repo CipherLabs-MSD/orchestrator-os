@@ -69,3 +69,13 @@ Declare UTF-8 on both ends of every stdio protocol. Probe liveness with OpenProc
   cannot find descendants once their parent has exited.
 - **Scope:** project · **Confidence:** high (Windows), unverified (macOS) · **Learned:** 2026-10-01 · **Status:** active
 - **Applies to capabilities:** architecture, backend, devops
+
+### LRN-0009 — A Windows venv `python.exe` is a launcher; it breaks spawn-then-assign Job Objects
+- **Evidence:** OOS-0003 setup (2026-10-02). Under a Python 3.14 venv, the spike's tree-kill test failed. `Popen.pid`
+  (the launcher) differed from the interpreter's own pid, and the real interpreter escaped the Job Object.
+  Spawning `sys._base_executable` made the test pass again.
+- **Scope:** project · **Confidence:** high · **Learned:** 2026-10-02 · **Status:** active
+- **Applies to capabilities:** backend, devops, testing
+
+This confirms the assignment-race risk listed in ADR-0008. Production supervision (OOS-0008) must assign
+before the process runs (suspended creation or a job-list attribute), and must not rely on spawn-then-assign.
