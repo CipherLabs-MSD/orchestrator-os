@@ -11,6 +11,7 @@ has) or `orchestrator` (resolvable by an agent within its authority, in the name
 | OQ-004 | Which execution backends may receive private project code or user context? | billy | — | **resolved** (ADR-0007: Claude + Codex, task-relevant, never secrets) |
 | OQ-005 | Spending and usage budget for autonomous runs | billy | — | **resolved** (ADR-0007: 0 SEK; every cost escalates) |
 | OQ-006 | Implementation language and runtime for the control plane | orchestrator (OOS-0002, D3). Billy's preference welcome as evidence. | — | **resolved** (ADR-0008: Python ≥ 3.12, hybrid model; pending owner review) |
+| OQ-008 | Which static checker (type checker and/or linter) satisfies G-STATIC for runtime code? | orchestrator (D2; needs a dev dependency) | G-STATIC for OOS-0003 onward | open |
 | OQ-007 | Which domain becomes the second *operational* package, and when? (Finance is the documented candidate.) | billy | OOS-0020 | **deferred** by Billy (2026-10-01); not selected |
 
 ---
@@ -66,3 +67,8 @@ has) or `orchestrator` (resolvable by an agent within its authority, in the name
   because every threshold and transaction rule is a D4 decision for Billy.
 - **Not needed now.** It only matters after the sandbox pilot (OOS-0016). Until then the finance
   package stays `illustrative` and non-operational.
+
+### OQ-008 — Static analysis for G-STATIC
+- Runtime code exists now (`oos/`). G-STATIC requires "no new findings at or above the configured severity",
+  but no analyzer is configured. `compileall -W error` is the only static check run. Adopting a type checker or
+  linter is a dev-only dependency, which makes it a D2 decision. Proposed for the next code task.

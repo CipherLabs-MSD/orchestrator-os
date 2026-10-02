@@ -79,3 +79,12 @@ Declare UTF-8 on both ends of every stdio protocol. Probe liveness with OpenProc
 
 This confirms the assignment-race risk listed in ADR-0008. Production supervision (OOS-0008) must assign
 before the process runs (suspended creation or a job-list attribute), and must not rely on spawn-then-assign.
+
+### LRN-0010 — Layered safety masks single-layer bugs; sabotage each layer separately
+- **Evidence:** OOS-0003 sabotage. Making create overwrite was NOT caught by the original tests, because the lock and the
+  duplicate pre-check prevented it. A dedicated test of the create-only layer was needed. A forged log line was only
+  caught once a test bypassed the checksum and sequence checks.
+- **Scope:** global · **Confidence:** high · **Learned:** 2026-10-02 · **Status:** active
+- **Applies to capabilities:** testing, code_review
+
+For defence-in-depth code, test each layer with the others bypassed, and run `tools/store_sabotage_check.py`.

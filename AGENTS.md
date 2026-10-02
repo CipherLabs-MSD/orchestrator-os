@@ -72,7 +72,9 @@ python tools/validate.py
 python -m unittest discover tests
 ```
 
+Use a Python >= 3.12 environment (ADR-0008), e.g. the project `.venv`. Older interpreters are refused by `oos`.
 If you change `tools/validate.py` or any policy file, also run `python tools/mutation_check.py`.
+If you change `oos/records/`, also run `python tools/store_sabotage_check.py`.
 Before any push, run `python tools/prepublish_check.py` **and** review the full diff to be published.
 Report the actual output. If something was skipped, say so.
 
