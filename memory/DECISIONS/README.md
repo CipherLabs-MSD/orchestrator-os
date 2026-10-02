@@ -11,6 +11,7 @@ D2 decisions are recorded here as `DEC-NNNN-<slug>.md`. D3 and D4 decisions are 
 | [DEC-0001](DEC-0001-stdlib-python-validator.md) | Stdlib-only Python validator for foundation artifacts | OOS-0001 | 2026-10-01 |
 | [DEC-0002](DEC-0002-agents-md-canonical.md) | AGENTS.md is canonical; vendor files are import shims | OOS-0001 | 2026-10-01 |
 | [DEC-0003](DEC-0003-addendum-implementation-choices.md) | Implementation choices for the domain-specialization addendum | OOS-0001 | 2026-10-01 |
+| [DEC-0006](DEC-0006-fail-closed-schema-subset.md) | Keep a fail-closed JSON Schema subset; one validator implementation | OOS-0003 | 2026-10-02 |
 
 ## Owner (D4) decisions
 
@@ -31,3 +32,4 @@ D2 decisions are recorded here as `DEC-NNNN-<slug>.md`. D3 and D4 decisions are 
 | [ADR-0006](../../docs/adr/ADR-0006-domain-agnostic-kernel.md) | One domain-agnostic kernel plus domain specialization | D3 |
 | [ADR-0007](../../docs/adr/ADR-0007-initial-owner-policy.md) | Initial owner policy | D4 |
 | [ADR-0008](../../docs/adr/ADR-0008-runtime-and-execution-model.md) | Runtime language and initial execution model | D3 |
+| [ADR-0009](../../docs/adr/ADR-0009-record-store.md) | Record store and schema validation substrate | D3 |

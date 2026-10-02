@@ -58,6 +58,7 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 | [`orchestration/backends.json`](orchestration/backends.json) | Execution backend (agent provider) registry |
 | [`domains/`](domains/) | **Domain packages**: `software-development` (draft) and `finance` (illustrative only) |
 | [`schemas/`](schemas/) | JSON Schemas for every durable record type |
+| [`oos/`](oos/) | **Runtime code** (Python >= 3.12). Now: `oos.records`, the domain-neutral record store and schema validation ([RECORD_STORE](docs/RECORD_STORE.md)). |
 | [`spikes/`](spikes/) | **Disposable** experiments that produce evidence for ADRs (OOS-0002 runtime spike). Never a dependency. |
 | [`tools/`](tools/) | `validate.py`, a stdlib-only consistency checker |
 | [`tests/`](tests/) | Tests for the validator and the foundation artifacts |
@@ -72,8 +73,10 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 ## Validate
 
 ```sh
+python -m venv .venv              # once, with Python >= 3.12 (ADR-0008); then use .venv's python below
 python tools/validate.py          # structure, cross-references, tighten-only composition, kernel purity, links
-python -m unittest discover tests # test suite (stdlib only, Python ≥ 3.10)
+python -m unittest discover tests # test suite (stdlib only)
+python tools/store_sabotage_check.py  # breaks record-store guarantees in a temp copy; tests must catch them
 python tools/mutation_check.py    # plants known defects in a temp copy; every one must be caught
 python tools/prepublish_check.py   # before any push: scans the commits to be published
 ```

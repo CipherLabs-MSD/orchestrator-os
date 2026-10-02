@@ -60,8 +60,9 @@ Running the suite in parallel on Windows causes file-lock flakes...
 ```
 
 Machine-readable equivalents are defined in [`schemas/`](../schemas/): `decision-record`,
-`failed-approach` and `evidence`. Until a record store exists (OOS-0003), Markdown is the
-canonical form.
+`failed-approach` and `evidence`. The record store ([RECORD_STORE](RECORD_STORE.md), OOS-0003) now persists
+them as validated, enveloped JSON. The human-primary Markdown files in `memory/` stay canonical for the
+OOS project itself, and nothing has been migrated yet.
 
 ## 5. Lifecycle
 

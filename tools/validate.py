@@ -17,6 +17,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+# One validator implementation: the runtime library's (OOS-0003, DEC-0006). Requires Python >= 3.12 (ADR-0008).
+from oos.records.schema import SUPPORTED_SCHEMA_KEYWORDS, VERSION_KEY, unsupported_keywords  # noqa: E402
+from oos.records.schema import validate as _validate_issues  # noqa: E402
 
 REQUIRED_FILES = [
     "README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", ".gitignore", ".gitattributes",
@@ -36,6 +40,10 @@ REQUIRED_FILES = [
     "domains/README.md", "domains/software-development/README.md", "domains/software-development/domain.json",
     "domains/software-development/GIT_WORKFLOW.md", "domains/finance/README.md", "domains/finance/domain.json",
     "project/MILESTONES.md", "project/OKRS.md", "project/BACKLOG.md", "project/backlog.json",
+    "pyproject.toml", "docs/RECORD_STORE.md", "docs/adr/ADR-0009-record-store.md",
+    "orchestration/kernel/record_types.json", "schemas/record-envelope.schema.json", "schemas/log-entry.schema.json",
+    "oos/__init__.py", "oos/records/__init__.py", "oos/records/store.py", "oos/records/log.py",
+    "oos/records/schema.py", "oos/records/canonical.py", "oos/records/errors.py", "oos/records/_platform.py",
 ]
 
 # Context file -> category it must declare.
@@ -71,11 +79,6 @@ SECRET_PATTERNS = [
     re.compile(r"xox[baprs]-[A-Za-z0-9-]{10,}"),
 ]
 
-SUPPORTED_SCHEMA_KEYWORDS = {
-    "$schema", "$id", "title", "description", "type", "required", "properties",
-    "additionalProperties", "enum", "pattern", "items", "minimum", "maximum", "minLength",
-}
-
 LEVEL_ORDER = ["D1", "D2", "D3", "D4", "PROHIBITED"]
 
 
@@ -99,70 +102,15 @@ def tracked_text_files() -> list[Path]:
     return out
 
 
-# --------------------------------------------------------------------------- mini JSON Schema
-
-_TYPES = {
-    "object": dict, "array": list, "string": str, "boolean": bool, "null": type(None),
-}
-
-
-def _type_ok(value, t: str) -> bool:
-    if t == "integer":
-        return isinstance(value, int) and not isinstance(value, bool)
-    if t == "number":
-        return isinstance(value, (int, float)) and not isinstance(value, bool)
-    return isinstance(value, _TYPES[t])
-
+# --------------------------------------------------------------------------- schema validation (delegated)
 
 def validate_instance(instance, schema: dict, path: str = "$") -> list[str]:
-    """Validate against the JSON Schema subset in SUPPORTED_SCHEMA_KEYWORDS."""
-    errors: list[str] = []
-    if "type" in schema:
-        types = schema["type"] if isinstance(schema["type"], list) else [schema["type"]]
-        if not any(_type_ok(instance, t) for t in types):
-            return [f"{path}: expected type {types}, got {type(instance).__name__}"]
-    if "enum" in schema and instance not in schema["enum"]:
-        errors.append(f"{path}: {instance!r} not in {schema['enum']}")
-    if isinstance(instance, str):
-        if "pattern" in schema and not re.search(schema["pattern"], instance):
-            errors.append(f"{path}: {instance!r} does not match /{schema['pattern']}/")
-        if "minLength" in schema and len(instance) < schema["minLength"]:
-            errors.append(f"{path}: shorter than {schema['minLength']}")
-    if _type_ok(instance, "number"):
-        if "minimum" in schema and instance < schema["minimum"]:
-            errors.append(f"{path}: {instance} < minimum {schema['minimum']}")
-        if "maximum" in schema and instance > schema["maximum"]:
-            errors.append(f"{path}: {instance} > maximum {schema['maximum']}")
-    if isinstance(instance, dict):
-        props = schema.get("properties", {})
-        for key in schema.get("required", []):
-            if key not in instance:
-                errors.append(f"{path}: missing required '{key}'")
-        if schema.get("additionalProperties") is False:
-            for key in instance:
-                if key not in props:
-                    errors.append(f"{path}: unexpected property '{key}'")
-        for key, sub in props.items():
-            if key in instance:
-                errors.extend(validate_instance(instance[key], sub, f"{path}.{key}"))
-    if isinstance(instance, list) and "items" in schema:
-        for i, item in enumerate(instance):
-            errors.extend(validate_instance(item, schema["items"], f"{path}[{i}]"))
-    return errors
+    """String form of oos.records.schema.validate, kept for existing callers."""
+    return [str(i) for i in _validate_issues(instance, schema, path)]
 
 
 def _schema_keywords(schema, path="$") -> list[str]:
-    errors = []
-    if isinstance(schema, dict):
-        for k, v in schema.items():
-            if k not in SUPPORTED_SCHEMA_KEYWORDS:
-                errors.append(f"{path}: unsupported keyword '{k}'")
-            if k == "properties":
-                for pk, pv in v.items():
-                    errors.extend(_schema_keywords(pv, f"{path}.properties.{pk}"))
-            elif k == "items":
-                errors.extend(_schema_keywords(v, f"{path}.items"))
-    return errors
+    return unsupported_keywords(schema, path)
 
 
 # --------------------------------------------------------------------------- checks
@@ -197,6 +145,9 @@ def check_schemas() -> list[str]:
                 errors.append(f"{rel}: missing '{key}'")
         if not schema.get("$id", "").endswith(p.name):
             errors.append(f"{rel}: $id should end with file name")
+        version = schema.get(VERSION_KEY)
+        if not (isinstance(version, int) and not isinstance(version, bool) and version >= 1):
+            errors.append(f"{rel}: missing or invalid '{VERSION_KEY}' (record evolution, docs/RECORD_STORE.md)")
         errors.extend(f"{rel}: {e}" for e in _schema_keywords(schema))
     return errors
 
@@ -784,6 +735,34 @@ def kernel_vocabulary_hits(obj, path: str = "$") -> list[str]:
     return hits
 
 
+KERNEL_CODE_DIRS = ["oos"]
+VENDOR_NAMES = re.compile(r"\b(claude|codex|anthropic|openai)\b", re.IGNORECASE)
+
+
+def check_record_types() -> list[str]:
+    """orchestration/kernel/record_types.json binds record types to existing, versioned schemas."""
+    errors = []
+    doc = load_json("orchestration/kernel/record_types.json")
+    names = {p.name[: -len(".schema.json")] for p in (ROOT / "schemas").glob("*.schema.json")}
+    for required in ("record-envelope", "log-entry"):
+        if required not in names:
+            errors.append(f"schemas/{required}.schema.json missing (record store substrate)")
+    if doc.get("format") != "oos-record-store/1":
+        errors.append("record_types.json: unexpected format")
+    for t, spec in doc.get("types", {}).items():
+        if not re.fullmatch(r"[a-z][a-z0-9-]{0,63}", t):
+            errors.append(f"record type {t!r}: not a portable name")
+        if spec.get("schema") not in names:
+            errors.append(f"record type {t}: unknown schema {spec.get('schema')!r}")
+        if spec.get("mutability") not in ("immutable", "mutable"):
+            errors.append(f"record type {t}: mutability must be immutable|mutable")
+        elif spec.get("schema") in names:
+            props = load_json(f"schemas/{spec['schema']}.schema.json").get("properties", {})
+            if "id" not in props:
+                errors.append(f"record type {t}: schema has no 'id' property")
+    return errors
+
+
 def check_kernel_purity() -> list[str]:
     """Invariant I-1: no project names in core files (outside designated example docs), and
     no domain vocabulary in kernel machine-readable files."""
@@ -793,6 +772,15 @@ def check_kernel_purity() -> list[str]:
             rel = p.relative_to(ROOT).as_posix()
             if p.is_file() and rel not in PROJECT_NAME_ALLOWLIST and PROJECT_NAME_PATTERN.search(p.read_text(encoding="utf-8")):
                 errors.append(f"{rel}: core file names a real project (allowed only in designated example docs)")
+    for d in KERNEL_CODE_DIRS:
+        for p in sorted((ROOT / d).rglob("*.py")):
+            rel = p.relative_to(ROOT).as_posix()
+            text = p.read_text(encoding="utf-8").replace("_", " ")
+            for rx, what in ((DOMAIN_VOCABULARY, "domain vocabulary"), (VENDOR_NAMES, "vendor name"),
+                             (PROJECT_NAME_PATTERN, "project name")):
+                m = rx.search(text)
+                if m:
+                    errors.append(f"{rel}: {what} in kernel code: '{m.group(0)}'")
     for pattern in KERNEL_JSON_GLOBS:
         for p in sorted(ROOT.glob(pattern)):
             rel = p.relative_to(ROOT).as_posix()
@@ -892,6 +880,7 @@ CHECKS = [
     ("schemas well-formed", check_schemas),
     ("registries conform to schemas", check_registries),
     ("cross-references resolve", check_cross_references),
+    ("record-type registry", check_record_types),
     ("backlog DAG + views agree", check_backlog),
     ("kernel decision policy + golden examples", check_decision_policy),
     ("domain packages compose tighten-only", check_domain_packages),

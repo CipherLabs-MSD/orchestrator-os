@@ -185,6 +185,7 @@ are never concatenated wholesale into a prompt.
 | [ADR-0005](adr/ADR-0005-evidence-gated-completion.md) | Completion requires gate-specific evidence, verified independently |
 | [ADR-0006](adr/ADR-0006-domain-agnostic-kernel.md) | One domain-agnostic kernel plus domain packages, composed into profiles, instead of separate orchestrator codebases |
 | [ADR-0008](adr/ADR-0008-runtime-and-execution-model.md) | Runtime **Python ≥ 3.12** (stdlib-first, asyncio). **Hybrid execution**: session-oriented resumable runs with a write-ahead journal, and a daemon later as a trigger only. See [EXECUTION_RUNTIME](EXECUTION_RUNTIME.md). |
+| [ADR-0009](adr/ADR-0009-record-store.md) | Record store: one canonical JSON file per record in a domain-neutral envelope, plus hash-chained append-only logs. JSON Schema stays the single source of truth (fail-closed subset). See [RECORD_STORE](RECORD_STORE.md). |
 | [ADR-0007](adr/ADR-0007-initial-owner-policy.md) | Initial **owner policy** (`orchestration/owner_policy.json`): private context store, in-session escalation, Billy-only merge, provider data policy, 0 SEK spending |
 
 ## 6. Future direction: an orchestrator that generates orchestrators

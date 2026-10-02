@@ -9,8 +9,8 @@ dependencies, and `tools/validate.py` checks this. Questions: [`memory/OPEN_QUES
 | ID | Title | M | Status | Depends on | Blocked by (questions) | Expected level |
 |---|---|---|---|---|---|---|
 | OOS-0001 | Foundation: architecture, kernel/domain separation, models, policies, schemas, backlog, validator | M0 | done | — | — | D3 |
-| OOS-0002 | Runtime, language and execution-mode decision (spike + ADR) | M1 | verifying | OOS-0001 | — | D3 |
-| OOS-0003 | Record store and schema validation library | M1 | proposed | OOS-0002 | — | D2 |
+| OOS-0002 | Runtime, language and execution-mode decision (spike + ADR) | M1 | done | OOS-0001 | — | D3 |
+| OOS-0003 | Record store and schema validation library | M1 | verifying | OOS-0002 | — | D2 |
 | OOS-0004 | Task graph engine: states, ready-set, DAG checks, revisions; per-project storage layout | M1 | proposed | OOS-0003 | — | D3 |
 | OOS-0005 | Decision Engine v0: policy classifier, golden tests, escalation records | M1 | proposed | OOS-0003, OOS-0018 | — | D2 |
 | OOS-0006 | Context Router v0: rule-based packages, manifest, golden tests | M1 | proposed | OOS-0003, OOS-0004, OOS-0018 | — | D2 |
@@ -105,7 +105,7 @@ contributor familiarity (`context/` may supply evidence once populated).
 **Out of scope.** Building any component.
 **Gates.** G-DOCS, G-REVIEW.
 
-**Result (2026-10-01, status: verifying, awaiting Billy's review of the PR).**
+**Result (2026-10-01). DONE: Billy reviewed and merged PR #1 on 2026-10-02.**
 - Decision: [ADR-0008](../docs/adr/ADR-0008-runtime-and-execution-model.md). **Python ≥ 3.12** (stdlib-first, asyncio).
   **Hybrid execution model**: session-oriented resumable runs now, with a scheduler or daemon later as a trigger only.
 - Design constraints for OOS-0003, 0007 and 0008: [EXECUTION_RUNTIME](../docs/EXECUTION_RUNTIME.md).
@@ -113,7 +113,19 @@ contributor familiarity (`context/` may supply evidence once populated).
 - Tested on Windows 11 only. macOS is **unverified**, and OOS-0008 must collect macOS evidence.
 - Owner action: install Python 3.12+ on the development machine before OOS-0003 needs it.
 
-## OOS-0003 to OOS-0020
+## OOS-0003: Record store and schema validation library
+
+**Status:** verifying (awaiting Billy's review of the PR) · **Gates:** G-TEST, G-STATIC, G-REVIEW
+
+- Delivered: `oos/records/` (SchemaRegistry, RecordStore, AppendLog), envelope and log-entry schemas,
+  `x-oos-schema-version` on every schema, `orchestration/kernel/record_types.json`,
+  [ADR-0009](../docs/adr/ADR-0009-record-store.md), [DEC-0006](../memory/DECISIONS/DEC-0006-fail-closed-schema-subset.md)
+  and [RECORD_STORE](../docs/RECORD_STORE.md).
+- G-TEST: store and log tests, plus `tools/store_sabotage_check.py` (5/6 caught; fsync is a documented untestable gap).
+- G-STATIC: **only partly met.** `compileall -W error` is clean, but no linter or type checker is adopted yet (OQ-008, a D2 decision).
+- Not in scope: task graph, decision engine, router, adapters, scheduler, private context store.
+
+## OOS-0004 to OOS-0020
 
 Each item gets a full scope, out-of-scope list and acceptance-criteria block like the two
 above when it becomes `ready`. Writing that block is part of making it ready, and it is

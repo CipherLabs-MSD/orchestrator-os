@@ -12,6 +12,9 @@ Schema: [`schemas/failed-approach.schema.json`](../schemas/failed-approach.schem
 - **Recurred:** 2026-10-01, OOS-0001 addendum. A heredoc Python script failed the same way. This entry had
   not been consulted before acting. The narrowed cause is apostrophes inside heredoc bodies, even with a
   quoted delimiter. The working pattern is to write the script with the file tool, then run it.
+- **Recurred again:** 2026-10-02, OOS-0003. Heredoc-embedded Python turned an escaped newline into a real newline
+  in a generated test file (syntax error), and a Windows path literal into a unicode-escape error. Rule: never generate
+  source files through heredocs. Write them with the file tool.
 - **Scope:** project · **Capabilities:** devops · **Date:** 2026-10-01
 
 ### FAILED-0002 — Measuring orphan survival with `subprocess.run(capture_output=True)`

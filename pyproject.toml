@@ -1,0 +1,12 @@
+[project]
+name = "orchestrator-os"
+version = "0.1.0"
+description = "Orchestrator OS: a domain-agnostic orchestration kernel (design stage)."
+requires-python = ">=3.12"  # ADR-0008
+dependencies = []          # stdlib-first; any dependency is a D2 decision (ADR-0008)
+license = { text = "UNLICENSED" }
+
+# No build backend or packaging decision yet: run from the repository root.
+#   python -m venv .venv            (with Python >= 3.12)
+#   .venv/bin/python -m unittest discover tests        (POSIX)
+#   .venv\Scripts\python -m unittest discover tests    (Windows)

@@ -28,7 +28,7 @@ def run(cmd: list[str], env: dict) -> dict:
 
 
 def main() -> int:
-    env = {**os.environ, "OOS_SPIKE_PYTHON": sys.executable}
+    env = {**os.environ, "OOS_SPIKE_PYTHON": getattr(sys, "_base_executable", None) or sys.executable}
     node = os.environ.get("OOS_SPIKE_NODE") or shutil.which("node")
     if node:
         env["OOS_SPIKE_NODE"] = node

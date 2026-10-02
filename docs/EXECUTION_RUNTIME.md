@@ -119,6 +119,9 @@ interrupted, and resumed so that every task succeeded **exactly once**.
      request is sent. The tree then dies even if OOS itself crashes (E4).
    - POSIX: a new session and process group (`killpg`). Orphans after an OOS crash are killed by
      recovery, from the recorded process-group ids.
+   - **Assignment race (reproduced in OOS-0003, LRN-0009).** A process that spawns before it is
+     assigned to the job escapes it, and a Windows venv `python.exe` is exactly such a launcher.
+     OOS-0008 must create workers suspended (or use a job-list process attribute) and assign them before they run.
 2. **Reap at every terminal state.** Descendants inherit stdio handles. While they live, pipe EOF
    never arrives (E2-H; the first E4 run stalled for 60 s). Never treat EOF as "worker finished".
 3. **Cancellation is a protocol message**, then a grace period, then a hard tree kill. Do not rely on

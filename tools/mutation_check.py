@@ -59,6 +59,10 @@ MUTATIONS = {
     "deferred second domain made operational": lambda r: jedit(r, FIN, lambda d: d.__setitem__("operational", True)),
     "unlabelled spike source": lambda r: (r / "spikes/oos-0002/extra.py").write_text("print('x')\n", encoding="utf-8"),
     "kernel references spike code": lambda r: jedit(r, KPOL, lambda d: d.__setitem__("note", "see spikes/oos-0002 runner")),
+    "schema without version": lambda r: jedit(r, "schemas/evidence.schema.json", lambda d: d.pop("x-oos-schema-version")),
+    "record type with unknown schema": lambda r: jedit(r, "orchestration/kernel/record_types.json", lambda d: d["types"].__setitem__("ghost", {"schema": "no-such", "mutability": "immutable"})),
+    "domain vocabulary in kernel code": lambda r: tedit(r, "oos/records/store.py", lambda s: s + "\n# stores the git commit sha\n"),
+    "vendor name in kernel code": lambda r: tedit(r, "oos/records/log.py", lambda s: s + "\n# tuned for Claude\n"),
     "backlog cycle": lambda r: jedit(r, "project/backlog.json", lambda d: d["items"][1]["depends_on"].append("OOS-0019")),
 }
 

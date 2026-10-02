@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/log-entry.schema.json",
+  "x-oos-schema-version": 1,
+  "title": "Append-only log entry",
+  "description": "One line of an append-only, hash-chained JSON Lines log (OOS-0003). Substrate for run journals (EXECUTION_RUNTIME §4). The data payload is validated by the log's own data schema when one is configured.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["seq", "at", "kind", "data", "prev", "check"],
+  "properties": {
+    "seq": { "type": "integer", "minimum": 1 },
+    "at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$" },
+    "kind": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]{0,63}$", "description": "Transition name, e.g. run_started, dispatch_intent, terminal." },
+    "data": { "type": "object" },
+    "prev": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "check": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  }
+}
