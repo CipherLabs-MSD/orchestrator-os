@@ -1,5 +1,9 @@
 # Discovery Inbox
 
+> **Frozen historical copy (2026-11-20).** The canonical inbox moved to the owner's private vault
+> (`Machine/Discovery/INBOX.md`) by owner decision. Entries DISC-001–396 are kept here unchanged.
+> Do not add or edit entries in this file.
+
 One human-edited entry point for resource links and ideas across the ecosystem.
 Model Lab and the OOS runtime are not dependencies. Domain research registers keep
 their authority; this inbox indexes them rather than replacing their decisions.

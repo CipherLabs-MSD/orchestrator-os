@@ -64,8 +64,9 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 
 ## Discovery Inbox
 
-Collect public links, articles, repositories and ideas in [discovery/INBOX.md](discovery/INBOX.md).
-Capture first; research and implementation require separate authorized tasks. No Model Lab dependency.
+**Moved (2026-11-20, owner decision):** the canonical Discovery Inbox now lives in the owner's private vault
+(`Machine/Discovery/INBOX.md`), where all agents and bots capture to it. [discovery/INBOX.md](discovery/INBOX.md)
+is a frozen historical copy up to DISC-396. Do not add entries here.
 
 ## Start here
 
