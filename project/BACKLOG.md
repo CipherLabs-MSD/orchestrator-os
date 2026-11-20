@@ -28,6 +28,7 @@ dependencies, and `tools/validate.py` checks this. Questions: [`memory/OPEN_QUES
 | OOS-0018 | Domain package loader + profile composition (tighten-only merge, kernel purity) | M1 | proposed | OOS-0003 | — | D3 |
 | OOS-0019 | Orchestrator Factory: generate draft domain package + profile from a domain definition | M5 | proposed | OOS-0020 | — | D3 |
 | OOS-0020 | Second operational domain package (candidate: finance) with Billy-approved authority rules | M5 | proposed | OOS-0016, OOS-0018 | OQ-007 | D4 |
+| OOS-0021 | Minimal ecosystem Discovery Inbox | M1 | verifying | — | — | D1 |
 
 ## Dependency graph (topological waves)
 
@@ -36,7 +37,7 @@ dependencies are done.
 
 | Wave | Items | Waits for |
 |---|---|---|
-| 0 | OOS-0001 | — |
+| 0 | OOS-0001 · OOS-0021 | — |
 | 1 | OOS-0002 | 0001 |
 | 2 | OOS-0003 | 0002 |
 | 3 | OOS-0004 · OOS-0007 · OOS-0012 · OOS-0018 | 0003 · 0002+0003 · 0003 · 0003 |
@@ -118,3 +119,12 @@ contributor familiarity (`context/` may supply evidence once populated).
 Each item gets a full scope, out-of-scope list and acceptance-criteria block like the two
 above when it becomes `ready`. Writing that block is part of making it ready, and it is
 written with the evidence available at that time. That evidence may include replanning.
+
+## OOS-0021: Minimal ecosystem Discovery Inbox
+
+**Assigned:** direct user request, 2026-10-14; task ID allocated for that request.
+**Status:** verifying; local delivery awaiting owner review. **Level:** D1.
+**Scope:** human-edited ecosystem inbox in `discovery/INBOX.md`, Ruflo as DISC-001, README pointer.
+**Out of scope:** runtime, Model Lab, installation, integrations, automatic task creation, changes to other repos, publication or merge.
+**Acceptance:** requested fields and all seven statuses; IDEA/CANDIDATE separate from authorized TASKS; add-row example; repo validator and tests pass.
+**Gates:** G-DOCS, G-REVIEW (owner pending). No dependencies.

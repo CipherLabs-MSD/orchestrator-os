@@ -1,3 +1,16 @@
+# OOS-0021 delivery · 2026-10-14
+
+- Separate checkout, branch `oos-0021/discovery-inbox`, base `109a3dc`. Existing local repos and worktrees untouched.
+- Added `discovery/INBOX.md`, DISC-001 Ruflo, all requested fields/statuses and add-row instructions.
+- D1: reversible documentation implementing the direct user request. No kernel or policy changes.
+- Location choice: Orchestrator-OS is the requested execution control plane. UniversalSystems indexes Idea-Explorations as an older raw OS-spark inbox feeding BusinessSync; it does not provide this resource-candidate register. System-Builder-OS holds principles, not resource intake.
+- No evaluation, installation, automatic tasks, Model Lab dependency, publication or merge.
+- Verification: validator 15/15 PASS; foundation tests 31/31 PASS; full suite ran 33 tests, one runtime-spike setup error (TimeoutError), one Node skip (OOS_SPIKE_NODE unset). Same runtime error reproduced on untouched main `109a3dc` in a temporary archive. Full suite is not green; no runtime files changed.
+- Diff reviewed; whitespace check clean. Mutation check skipped (no validator or policy changes); prepublish check skipped (no push). Owner review pending; local commit only.
+- Next: review this branch; next captured resource gets DISC-002. Recheck remote state before publication.
+
+## Previous handoff (retained)
+
 # Handoff
 
 - **Session:** OOS-0002 runtime and execution spike · 2026-10-01 · Claude Code (claude-opus-5-5)

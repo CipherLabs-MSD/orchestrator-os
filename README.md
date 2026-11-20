@@ -62,6 +62,11 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 | [`tools/`](tools/) | `validate.py`, a stdlib-only consistency checker |
 | [`tests/`](tests/) | Tests for the validator and the foundation artifacts |
 
+## Discovery Inbox
+
+Collect public links, articles, repositories and ideas in [discovery/INBOX.md](discovery/INBOX.md).
+Capture first; research and implementation require separate authorized tasks. No Model Lab dependency.
+
 ## Start here
 
 - New to the project: [`docs/VISION.md`](docs/VISION.md), then [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
