@@ -1,3 +1,39 @@
+# OOS-0021 continuation · 2026-10-28
+
+- Reused existing checkout and `oos-0021/discovery-inbox`; predecessor `573af75`.
+  Upstream inbox path is absent from default branch (contents API 404); exact
+  discovery-branch search returned no branches. No second inbox or worktree created.
+- Extended `discovery/INBOX.md` to 23 unique resource entries with separate triage
+  and execution evidence. Kept Ruflo DISC-001 and original capture date. Next DISC-024.
+- `discovery/HISTORICAL_IMPORT.md` records source locators, hashes, scope, mappings,
+  exclusions and unresolved history. FinanceOS retains its domain register authority.
+- Kha-Ching, PennyLane and Qiskit are name-only captures from the owner request;
+  earlier discussion and exact URLs not recovered. UNKNOWN, no guessed links.
+- Kronos discovery is not a run; EGO Lite has documented use; DefiLlama fetcher code
+  exists; Frida source checkout is not a verified runtime. Historical rejections and
+  contamination hold retained. No new adoption decision, candidate installation,
+  runtime execution, implementation task, external integration or Model Lab dependency.
+- D1: reversible documentation under the existing assigned task. Updated its scope
+  in `project/BACKLOG.md`; task remains verifying, with owner review pending.
+- Verification: `python3 tools/validate.py` 15/15 PASS;
+  `python3 -m unittest discover -s tests -p test_foundation.py` 31 tests OK;
+  `python3 -m unittest discover tests` ran 33 tests in 9.566s,
+  FAILED (errors=1, skipped=1): PythonRuntimeEvidence.setUpClass TimeoutError in
+  the unchanged runtime spike; Node comparison skipped (OOS_SPIKE_NODE unset).
+  Same failure was already baseline-reproduced in the prior delivery below;
+  no new baseline run performed in this continuation. Full suite is not green.
+- Import audit PASS: 23 unique IDs/names, no duplicate URLs; all 16 curated source
+  resources represented exactly once; rejection/hold and execution status preserved;
+  three unresolved names have no inferred URLs. Initial audit parser included the
+  example row; corrected it to inspect only the Entries table, then passed.
+- Full changed-document diff reviewed; `git diff --check` clean. Mutation check
+  skipped: no validator/policy changes. Prepublish check skipped: no push authorized
+  or attempted. Source repos and synced project references left unchanged.
+- Next: owner reviews the local delivery and resolves missing source evidence when
+  available. Nothing published or merged. Refresh upstream before any future push.
+
+## Previous delivery (retained)
+
 # OOS-0021 delivery · 2026-10-14
 
 - Separate checkout, branch `oos-0021/discovery-inbox`, base `109a3dc`. Existing local repos and worktrees untouched.

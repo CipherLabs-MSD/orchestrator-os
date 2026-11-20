@@ -124,7 +124,7 @@ written with the evidence available at that time. That evidence may include repl
 
 **Assigned:** direct user request, 2026-10-14; task ID allocated for that request.
 **Status:** verifying; local delivery awaiting owner review. **Level:** D1.
-**Scope:** human-edited ecosystem inbox in `discovery/INBOX.md`, Ruflo as DISC-001, README pointer.
+**Scope:** human-edited ecosystem inbox in `discovery/INBOX.md`, Ruflo as DISC-001, README pointer. Owner continuation (2026-10-28): controlled historical import with evidence, deduplication, independent triage/execution status and explicit unknowns; see `discovery/HISTORICAL_IMPORT.md`.
 **Out of scope:** runtime, Model Lab, installation, integrations, automatic task creation, changes to other repos, publication or merge.
 **Acceptance:** requested fields and all seven statuses; IDEA/CANDIDATE separate from authorized TASKS; add-row example; repo validator and tests pass.
 **Gates:** G-DOCS, G-REVIEW (owner pending). No dependencies.
