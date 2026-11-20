@@ -62,6 +62,12 @@ Plans are hypotheses. Evidence may overturn them. See [`docs/CORE_LOOP.md`](docs
 | [`tools/`](tools/) | `validate.py`, a stdlib-only consistency checker |
 | [`tests/`](tests/) | Tests for the validator and the foundation artifacts |
 
+## Discovery Inbox
+
+**Moved (2026-11-20, owner decision):** the canonical Discovery Inbox now lives in the owner's private vault
+(`Machine/Discovery/INBOX.md`), where all agents and bots capture to it. [discovery/INBOX.md](discovery/INBOX.md)
+is a frozen historical copy up to DISC-396. Do not add entries here.
+
 ## Start here
 
 - New to the project: [`docs/VISION.md`](docs/VISION.md), then [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
