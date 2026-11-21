@@ -18,6 +18,7 @@ and update the old ADR's status line only. Purely editorial repairs, such as fix
 | [ADR-0006](ADR-0006-domain-agnostic-kernel.md) | One domain-agnostic kernel plus domain specialization | accepted (amends 0002–0005) | D3 |
 | [ADR-0007](ADR-0007-initial-owner-policy.md) | Initial owner policy | accepted (owner decision) | D4 |
 | [ADR-0008](ADR-0008-runtime-and-execution-model.md) | Runtime language and initial execution model | accepted (D3), pending owner review via PR | D3 |
+| [ADR-0009](ADR-0009-agent-merge-after-owner-approval.md) | Billy's approval of a change covers its merge (amends ADR-0007 §3) | accepted (owner decision) | D4 |
 
 Template: [TEMPLATE.md](TEMPLATE.md).
 

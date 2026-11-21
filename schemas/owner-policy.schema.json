@@ -48,8 +48,11 @@
       "type": "object",
       "required": ["merge_to_protected_canonical", "agent_merge_authority"],
       "properties": {
-        "merge_to_protected_canonical": { "type": "string", "enum": ["billy_only"] },
-        "agent_merge_authority": { "type": "string", "enum": ["none"] },
+        "merge_to_protected_canonical": { "type": "string", "enum": ["billy_only", "billy_approves_each_change"] },
+        "agent_merge_authority": { "type": "string", "enum": ["none", "after_billy_approves_the_change"] },
+        "agent_merge_conditions": { "type": "array", "items": { "type": "string" } },
+        "agent_merge_never_covers": { "type": "array", "items": { "type": "string" } },
+        "integration_record": { "type": "string" },
         "agent_actions_eligible_when_a_task_authorizes_them": { "type": "array", "items": { "type": "string" } },
         "change_requires": { "type": "string" }
       }

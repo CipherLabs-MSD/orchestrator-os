@@ -1,3 +1,9 @@
+# OOS-0022 agent merge after Billy's approval · 2026-11-21
+
+- Billy's owner decision of 2026-11-21 (verbatim in ADR-0009): his approval of a change covers its merge. Recorded as ADR-0009 (amends ADR-0007 §3) and in `orchestration/owner_policy.json` `integration_authority` (new enum values, agent_merge_conditions, agent_merge_never_covers); schema, `tools/validate.py` (pair check, conditions, never-covers, record) and 5 new mutations; AGENTS.md §7, DECISION_ENGINE §6, GIT_WORKFLOW, ARCHITECTURE and the ADR index updated.
+- Kernel `integration_authority.default` stays `billy`; the earned phase stays dormant. Nothing enforces conditions 1–4 per merge.
+- `validate.py` link check depends on the sibling `../fnd-002` directory existing (discovery batch links); it fails in a checkout elsewhere, unchanged by this task.
+
 # OOS-0021 HFT + AI intake · 2026-10-29
 
 - Accounted for 71/71 owner-supplied hits (30/11/30): 46 new NEW candidates, 1 existing (YieldYatra DISC-131), 7 fork duplicates grouped with parents, 8 rejected hits (7 spam-like Bitfinex forks plus personal profile), 9 PARKED evidence holds. Added 55 rows DISC-342–396 including holds; next DISC-397. All 341 prior rows preserved byte-for-byte, including concurrent algo-strategies batch. No existing rows changed.

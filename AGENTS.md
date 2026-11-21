@@ -95,7 +95,8 @@ Report the actual output. If something was skipped, say so.
 - Being *able* to do something (capability) never means being *allowed* to (authority).
 - **Owner policy** ([`orchestration/owner_policy.json`](orchestration/owner_policy.json), ADR-0007):
   never put Billy's actual personal context in this public repo. Escalate to Billy in the active
-  session. **Never merge to `main`**: Billy alone merges. The autonomous spending limit is **0 SEK**,
+  session. **Merge to `main` only a change Billy approved**, after a different agent reviewed it to
+  pass, with tests green and repository checks passing (ADR-0009); otherwise Billy merges. The autonomous spending limit is **0 SEK**,
   and every cost escalates. Secret material (keys, seed phrases, passwords, API or auth secrets)
   never goes into model context.
 
