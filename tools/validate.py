@@ -636,9 +636,27 @@ def check_owner_policy() -> list[str]:
     if owner["spending"]["autonomous_limit"]["amount"] == 0:
         if kpol["class_floors"].get("spend_money_or_allocate_funds") != "D4" or kpol["dimension_mapping"]["cost"][3] != "D4":
             errors.append("owner policy: 0 spending limit requires spend floor D4 and cost[3] = D4 in the kernel")
-    if owner["integration_authority"]["merge_to_protected_canonical"] == "billy_only" and \
+    ia = owner["integration_authority"]
+    if ia["merge_to_protected_canonical"] in ("billy_only", "billy_approves_each_change") and \
             kpol["integration_authority"].get("default") != "billy":
         errors.append("owner policy: Billy-only merge requires kernel integration_authority.default = billy")
+    # ADR-0009: an agent may merge only a change Billy approved, after independent review and green tests.
+    agent_merge = {"billy_only": "none", "billy_approves_each_change": "after_billy_approves_the_change"}
+    if agent_merge.get(ia["merge_to_protected_canonical"]) != ia["agent_merge_authority"]:
+        errors.append("owner policy: agent_merge_authority does not match merge_to_protected_canonical")
+    if ia["agent_merge_authority"] != "none":
+        required = {"billy_approved_this_change_and_the_approval_is_recorded_with_the_work",
+                    "a_different_agent_reviewed_it_to_pass",
+                    "tests_green_in_ci_or_full_local_suite_output_recorded_when_ci_cannot_run",
+                    "repository_checks_pass"}
+        missing = required - set(ia.get("agent_merge_conditions", []))
+        if missing:
+            errors.append(f"owner policy: agent merge without its conditions: {sorted(missing)}")
+        never = {"real_money", "live_trading_or_orders", "deletion", "sending_anything_outside_beyond_the_push_itself"}
+        if never - set(ia.get("agent_merge_never_covers", [])):
+            errors.append("owner policy: agent merge must name what it never covers")
+        if not ia.get("integration_record"):
+            errors.append("owner policy: agent merge authority must cite its owner record")
     if not any(c["status"] == "active" for c in owner["escalation"]["channels"]):
         errors.append("owner policy: at least one active escalation channel is required")
     second = owner.get("second_operational_domain", {})

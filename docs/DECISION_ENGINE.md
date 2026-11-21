@@ -138,7 +138,8 @@ Deciding something autonomously is different from integrating it into canonical 
 
 | Phase | Who integrates |
 |---|---|
-| Initial (**in force**, ADR-0007) | Billy only. Agents may prepare, push permitted branches, open PRs and recommend merge when a task authorizes it, but never merge. |
+| Initial (ADR-0007; superseded by ADR-0009 on 2026-11-21) | Billy only. Agents may prepare, push permitted branches, open PRs and recommend merge when a task authorizes it, but never merge. |
+| Owner-approved (**in force**, ADR-0009) | Billy approves each change. An agent may then merge it, once a different agent reviewed it to pass, tests are green (CI, or the full local suite recorded when CI cannot run) and the repository checks pass. Never covers real money, live trading, deletion or sending anything outside beyond the push. |
 | Earned (per project; only after an explicit owner decision) | Orchestrator may integrate D1/D2 changes whose gates pass. D3 needs Billy's approval or a review window. |
 
 Software binding: [GIT_WORKFLOW](../domains/software-development/GIT_WORKFLOW.md).
