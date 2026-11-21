@@ -42,14 +42,14 @@
     "agent_merge_conditions": [
       "billy_approved_this_change_and_the_approval_is_recorded_with_the_work",
       "a_different_agent_reviewed_it_to_pass",
-      "tests_green_in_ci_or_full_local_suite_output_recorded_when_ci_cannot_run",
+      "tests_pass_in_ci_or_when_ci_cannot_run_the_full_local_suite_passes_with_output_recorded",
       "repository_checks_pass"
     ],
     "agent_merge_never_covers": [
       "real_money",
       "live_trading_or_orders",
       "deletion",
-      "sending_anything_outside_beyond_the_push_itself"
+      "sending_anything_outside_other_than_pushing_and_merging_the_approved_change"
     ],
     "integration_record": "ADR-0009",
     "agent_actions_eligible_when_a_task_authorizes_them": [

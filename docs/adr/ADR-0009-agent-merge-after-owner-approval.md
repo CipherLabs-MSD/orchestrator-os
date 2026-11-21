@@ -30,12 +30,13 @@ agent should then carry out the merge.
 An agent may merge a change into `main` when all of these hold:
 1. Billy approved that change, and the approval (quote or link) is recorded with the work;
 2. a different agent reviewed it to pass;
-3. tests are green: CI if it runs; if CI cannot run, the full local suite output is recorded;
+3. tests are green: CI passes if it runs; if CI cannot run, the full local suite passes and its output
+   is recorded with the work;
 4. the repository's checks pass (`python tools/validate.py`, `python tools/mutation_check.py` when
    the validator or a policy file changed, `python tools/prepublish_check.py`).
 
-Never covered: real money, live trading or orders, deletion, and sending anything outside beyond the
-push itself. Machine-readable: `orchestration/owner_policy.json` `integration_authority`, checked by
+Never covered: real money, live trading or orders, deletion, and sending anything outside other than
+pushing and merging the change Billy approved. Machine-readable: `orchestration/owner_policy.json` `integration_authority`, checked by
 `tools/validate.py`. The kernel's `integration_authority.default` stays `billy`: the decision to
 integrate is still Billy's; the agent only carries it out. The "earned" phase stays dormant.
 

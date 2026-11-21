@@ -647,12 +647,12 @@ def check_owner_policy() -> list[str]:
     if ia["agent_merge_authority"] != "none":
         required = {"billy_approved_this_change_and_the_approval_is_recorded_with_the_work",
                     "a_different_agent_reviewed_it_to_pass",
-                    "tests_green_in_ci_or_full_local_suite_output_recorded_when_ci_cannot_run",
+                    "tests_pass_in_ci_or_when_ci_cannot_run_the_full_local_suite_passes_with_output_recorded",
                     "repository_checks_pass"}
         missing = required - set(ia.get("agent_merge_conditions", []))
         if missing:
             errors.append(f"owner policy: agent merge without its conditions: {sorted(missing)}")
-        never = {"real_money", "live_trading_or_orders", "deletion", "sending_anything_outside_beyond_the_push_itself"}
+        never = {"real_money", "live_trading_or_orders", "deletion", "sending_anything_outside_other_than_pushing_and_merging_the_approved_change"}
         if never - set(ia.get("agent_merge_never_covers", [])):
             errors.append("owner policy: agent merge must name what it never covers")
         if not ia.get("integration_record"):
