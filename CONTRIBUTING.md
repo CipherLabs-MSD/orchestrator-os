@@ -42,4 +42,5 @@ Human and agent contributors follow the same process. Agents must also follow
 - Markdown docs: put the decision first and the rationale second. Prefer tables over prose
   for policy.
 - JSON: 2-space indent, no comments, `snake_case` keys.
-- Python tooling: stdlib only until an ADR says otherwise.
+- Python >= 3.12 (ADR-0008), stdlib only; any dependency is a D2 decision. Runtime code lives in `oos/`, and it
+  must stay domain- and vendor-neutral (the validator scans it).

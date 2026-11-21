@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/record-envelope.schema.json",
+  "x-oos-schema-version": 1,
+  "title": "Record envelope",
+  "description": "Domain-neutral wrapper around every record persisted by the record store (OOS-0003, ADR-0009). The body is validated separately against the schema named by its record type. Supersession is recorded on the NEW record; the superseded record is never modified.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["oos_record", "type", "id", "schema", "schema_version", "revision", "created_at", "written_at", "provenance", "supersedes", "previous_digest", "extensions", "body", "digest"],
+  "properties": {
+    "oos_record": { "type": "integer", "enum": [1], "description": "Envelope format version." },
+    "type": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$", "description": "Record type name from orchestration/kernel/record_types.json." },
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "description": "Stable record id; equals body.id; unique per type case-insensitively." },
+    "schema": { "type": "string", "minLength": 1, "description": "$id of the body schema." },
+    "schema_version": { "type": "integer", "minimum": 1, "description": "x-oos-schema-version of the body schema when written." },
+    "revision": { "type": "integer", "minimum": 1, "description": "1 for new records; incremented only for mutable types." },
+    "created_at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$" },
+    "written_at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$" },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor"],
+      "description": "Who wrote this revision and under what authority (MEMORY_MODEL: every entry is attributable).",
+      "properties": {
+        "actor": { "type": "string", "minLength": 1, "description": "Component, role or principal, e.g. 'decision-engine', 'role:reviewer.security', 'billy'." },
+        "authority": { "type": ["string", "null"], "description": "Authority under which it was written, e.g. a D-level or a decision/ADR reference." },
+        "run_id": { "type": ["string", "null"] },
+        "evidence": { "type": "array", "items": { "type": "string" }, "description": "References (EVD-, DEC-, ADR-, ...). Never secret material." },
+        "source": { "type": ["string", "null"], "description": "Where the content came from (import, observation, agent output, ...)." }
+      }
+    },
+    "supersedes": { "type": ["string", "null"], "description": "Id of the same-type record this one supersedes." },
+    "previous_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$", "description": "Digest of the prior revision (mutable types): a per-record hash chain." },
+    "extensions": { "type": "object", "description": "Reserved for future domain-neutral metadata (e.g. audit fields). Empty in format 1." },
+    "body": { "type": "object" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "sha256 of the canonical envelope without this field; detects corruption and out-of-band edits." }
+  }
+}

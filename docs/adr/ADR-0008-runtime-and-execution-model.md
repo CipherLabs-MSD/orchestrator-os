@@ -1,6 +1,6 @@
 # ADR-0008 — Runtime language and initial execution model
 
-- **Status:** accepted (D3, orchestrator) · pending owner review via the OOS-0002 pull request
+- **Status:** accepted (D3, orchestrator) · owner-reviewed and merged (PR #1, 2026-10-02)
 - **Date:** 2026-10-01
 - **Decision level:** D3. Meaningful, reversible, inside accepted intent. It resolves OQ-006.
 - **Decided by:** orchestrator (OOS-0002 spike)

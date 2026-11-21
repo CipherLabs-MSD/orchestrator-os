@@ -1,0 +1,35 @@
+{
+  "version": "0.1.0",
+  "description": "KERNEL record-type registry for the record store (OOS-0003, ADR-0009). Binds record type names to schemas and a mutability rule. Domain-neutral: it names schema types, never domain meaning. Immutable types are append-only (change by superseding); mutable types keep every prior revision in history. context-package is not registered yet: its schema identifies packages by package_id, not id (decide in OOS-0006).",
+  "format": "oos-record-store/1",
+  "limits": {
+    "max_record_bytes": 1048576,
+    "max_log_line_bytes": 262144
+  },
+  "types": {
+    "decision-record": {
+      "schema": "decision-record",
+      "mutability": "immutable"
+    },
+    "evidence": {
+      "schema": "evidence",
+      "mutability": "immutable"
+    },
+    "failed-approach": {
+      "schema": "failed-approach",
+      "mutability": "immutable"
+    },
+    "claim": {
+      "schema": "claim",
+      "mutability": "immutable"
+    },
+    "knowledge-entry": {
+      "schema": "knowledge-entry",
+      "mutability": "immutable"
+    },
+    "task-node": {
+      "schema": "task-node",
+      "mutability": "mutable"
+    }
+  }
+}

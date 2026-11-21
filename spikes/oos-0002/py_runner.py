@@ -25,6 +25,11 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PROVIDER = HERE / "fake_provider.py"
 IS_WINDOWS = os.name == "nt"
+# Spawn workers with the *base* interpreter. On Windows a venv python.exe is a launcher that
+# starts the real interpreter as a child, which can be born before Job Object assignment and
+# escape the tree (found in OOS-0003 under Python 3.14, LRN-0009). Production must close that
+# race itself (suspended creation or a job-list attribute), see EXECUTION_RUNTIME §5.
+WORKER_PY = getattr(sys, "_base_executable", None) or sys.executable
 
 # ----------------------------------------------------------------------------- process control
 if IS_WINDOWS:
@@ -198,7 +203,7 @@ async def run_worker(spec: dict, *, timeout_s: float, cancel_after_s: float | No
         journal.append(event="dispatch_intent", task_id=task_id, attempt=attempt, idempotency_key=key)
     tree = ProcessTree()
     proc = await asyncio.create_subprocess_exec(
-        sys.executable, str(PROVIDER), stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
+        WORKER_PY, str(PROVIDER), stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE, cwd=cwd, **tree.spawn_kwargs())
     tree.adopt(proc.pid)  # before the request is sent, so grandchildren are born inside the job
     if journal:
@@ -284,7 +289,7 @@ def e1_spawn_latency(n: int = 10) -> dict:
         ts.sort()
         return round(ts[len(ts) // 2] * 1000, 1)
 
-    out = {"n": n, "python_cold_start_ms_median": measure([sys.executable, "-c", "pass"])}
+    out = {"n": n, "python_cold_start_ms_median": measure([WORKER_PY, "-c", "pass"])}
     node = os.environ.get("OOS_SPIKE_NODE")
     if node and Path(node).exists():
         out["node_cold_start_ms_median"] = measure([node, "-e", "0"])
@@ -314,7 +319,7 @@ def e3_tree_kill() -> dict:
     """Does killing the worker also kill what it spawned?"""
     out = {}
     # (a) naive: kill only the direct child
-    p = subprocess.Popen([sys.executable, str(PROVIDER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    p = subprocess.Popen([WORKER_PY, str(PROVIDER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     p.stdin.write(json.dumps({"task_id": "naive", "behavior": "spawn_grandchild"}) + "\n")
     p.stdin.flush()
     gc = _wait_for_grandchild(p)
@@ -326,7 +331,7 @@ def e3_tree_kill() -> dict:
         force_kill_pid_tree(gc)
     # (b) process-tree ownership (Job Object / process group)
     tree = ProcessTree()
-    p = subprocess.Popen([sys.executable, str(PROVIDER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+    p = subprocess.Popen([WORKER_PY, str(PROVIDER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          text=True, **tree.spawn_kwargs())
     tree.adopt(p.pid)
     p.stdin.write(json.dumps({"task_id": "tree", "behavior": "spawn_grandchild"}) + "\n")
@@ -356,7 +361,7 @@ def e4_orchestrator_crash() -> dict:
             pidfile = Path(d) / "pids.json"
             # No pipes to the crash-child: inherited pipe handles would make us wait for the grandchild.
             t = time.perf_counter()
-            subprocess.Popen([sys.executable, __file__, "crash-child", mode, str(pidfile)],
+            subprocess.Popen([WORKER_PY, __file__, "crash-child", mode, str(pidfile)],
                              stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).wait()
             out[mode + "_parent_exit_s"] = round(time.perf_counter() - t, 2)
             time.sleep(0.5)
@@ -371,7 +376,7 @@ def e4_orchestrator_crash() -> dict:
 
 def _crash_child(mode: str, pidfile: str) -> None:
     tree = ProcessTree() if mode == "job" else None
-    p = subprocess.Popen([sys.executable, str(PROVIDER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+    p = subprocess.Popen([WORKER_PY, str(PROVIDER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
                          **(tree.spawn_kwargs() if tree else {}))
     if tree:
         tree.adopt(p.pid)
@@ -414,7 +419,7 @@ def _journal_run(journal_path: str, crash_after: int) -> None:
 def e5_recovery() -> dict:
     with tempfile.TemporaryDirectory() as d:
         jp = Path(d) / "run.journal.jsonl"
-        crashed = subprocess.Popen([sys.executable, __file__, "journal-run", str(jp), "2"],
+        crashed = subprocess.Popen([WORKER_PY, __file__, "journal-run", str(jp), "2"],
                                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         crashed.wait()
         time.sleep(0.5)
@@ -467,7 +472,7 @@ def e6_paths_and_signals() -> dict:
         # Pitfall check: is os.kill(pid, 0) a liveness probe on Windows? (signal 0 == CTRL_C_EVENT)
         import signal
         out["windows_signal0_equals_CTRL_C_EVENT"] = getattr(signal, "CTRL_C_EVENT", None) == 0
-        p = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"],
+        p = subprocess.Popen([WORKER_PY, "-c", "import time; time.sleep(30)"],
                              creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)  # isolate from our console group
         time.sleep(0.2)
         try:

@@ -65,7 +65,7 @@ class NodeRuntimeEvidence(unittest.TestCase):
     def test_node_runner_classifies_and_shows_descendant_escape(self):
         proc = subprocess.run([os.environ["OOS_SPIKE_NODE"], str(SPIKE / "node_runner.mjs"), "e2"],
                               capture_output=True, text=True, encoding="utf-8",
-                              env={**os.environ, "OOS_SPIKE_PYTHON": sys.executable}, timeout=120)
+                              env={**os.environ, "OOS_SPIKE_PYTHON": getattr(sys, "_base_executable", None) or sys.executable}, timeout=120)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         workers = {w["task_id"]: w for w in json.loads(proc.stdout)["e2"]["workers"]}
         self.assertEqual(workers["C-hang"]["status"], "timed_out")

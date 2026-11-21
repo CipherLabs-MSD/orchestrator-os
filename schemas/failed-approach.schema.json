@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/failed-approach.schema.json",
+  "x-oos-schema-version": 1,
   "title": "Failed approach",
   "description": "A recorded dead end so future agents do not repeat it blindly. See docs/FAILURE_HANDLING.md.",
   "type": "object",

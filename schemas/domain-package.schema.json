@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/domain-package.schema.json",
+  "x-oos-schema-version": 1,
   "title": "Domain package manifest",
   "description": "domains/<id>/domain.json. A domain package specializes the kernel with capabilities, policy, verification, context rules, memory record types, tools and a workspace binding. See docs/DOMAIN_PACKAGES.md.",
   "type": "object",

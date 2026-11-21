@@ -1,29 +1,30 @@
 # Project State
 
-- **as_of:** branch `oos-0002/runtime-spike` (from `main` @ `7e01119`). See `git log`.
-- **Date:** 2026-10-01
-- **Current milestone:** M1 Walking skeleton (M0's OOS-0001 is DONE and merged to `main`)
-- **Health:** design plus a disposable spike. No production runtime code exists, by intent.
-- **Owner policy in force:** [ADR-0007](../docs/adr/ADR-0007-initial-owner-policy.md)
+- **as_of:** branch `oos-0003/record-store` (from `main` @ `109a3dc`, which includes OOS-0002 via PR #1). See `git log`.
+- **Date:** 2026-10-02
+- **Current milestone:** M1 Walking skeleton
+- **Runtime:** Python >= 3.12 (ADR-0008). The project `.venv` uses Python 3.14.7. The system interpreter is unchanged.
 
 ## Active work
 
 | Task | Status | Evidence |
 |---|---|---|
-| OOS-0002 | **verifying** (awaiting Billy's review of the PR) | ADR-0008. `tests/test_spike_oos0002.py`. `spikes/oos-0002/results/win32-2026-10-01.json`. |
+| OOS-0002 | **DONE** (merged by Billy, PR #1) | ADR-0008 |
+| OOS-0003 | **verifying** (awaiting Billy's review of the PR) | ADR-0009, DEC-0006, store/log tests, sabotage check 5/6 (fsync is an untestable, documented gap). G-STATIC only partly met (OQ-008). |
 
-## Next ready (after OOS-0002 is accepted and merged)
+## Next ready (after OOS-0003 is merged)
 
-- **OOS-0003**: record store and schema validation library, in Python ≥ 3.12 (ADR-0008).
+- Wave 3 of the backlog: **OOS-0004** (task graph engine), **OOS-0007** (backend contract + first adapter),
+  **OOS-0018** (domain loader). All depend only on OOS-0003 (and OOS-0002). OOS-0012 also depends on OOS-0003,
+  but needs Billy for the private context store.
 
-## Open owner items
+## Open items
 
-- Review and merge the OOS-0002 PR (Billy holds merge authority).
-- Install Python 3.12+ on the development machine (ADR-0008). The current machine has 3.10.6.
-- OQ-007 (second operational domain): deferred.
+- Billy: review and merge the OOS-0003 PR.
+- OQ-008: choose a static checker (orchestrator, D2).
+- OQ-007: second operational domain (deferred by Billy).
 
 ## Pointers
 
 - Backlog: [`project/BACKLOG.md`](../project/BACKLOG.md)
-- Runtime design: [`docs/EXECUTION_RUNTIME.md`](../docs/EXECUTION_RUNTIME.md)
-- Decisions: [`DECISIONS/`](DECISIONS/) and [`docs/adr/`](../docs/adr/)
+- Record store: [`docs/RECORD_STORE.md`](../docs/RECORD_STORE.md) · Runtime: [`docs/EXECUTION_RUNTIME.md`](../docs/EXECUTION_RUNTIME.md)

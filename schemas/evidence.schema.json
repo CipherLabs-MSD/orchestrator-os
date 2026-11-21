@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/evidence.schema.json",
+  "x-oos-schema-version": 1,
   "title": "Evidence record",
   "description": "Independently collected proof bound to an artifact version. Agent self-reports are not evidence. The kernel defines base types; domain packages define specialized types that extend one (e.g. software-development/test_result extends check_result). See docs/VERIFICATION.md.",
   "type": "object",

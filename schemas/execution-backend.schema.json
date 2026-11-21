@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/execution-backend.schema.json",
+  "x-oos-schema-version": 1,
   "title": "Execution backend descriptor",
   "description": "A system that can execute an agent run (CLI agent, API model, local model, human). Declaring a backend does not integrate it. See docs/AGENT_MODEL.md and ADR-0004.",
   "type": "object",

@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/CipherLabs-MSD/orchestrator-os/schemas/orchestrator-profile.schema.json",
+  "x-oos-schema-version": 1,
   "title": "Orchestrator profile",
   "description": "A specialized orchestrator: the kernel composed with one or more operational domain packages, an allowed set of execution backends, and tighten-only overrides. The output a future Orchestrator Factory would generate. See docs/DOMAIN_PACKAGES.md.",
   "type": "object",
