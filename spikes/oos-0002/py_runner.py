@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -25,6 +26,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PROVIDER = HERE / "fake_provider.py"
 IS_WINDOWS = os.name == "nt"
+log = logging.getLogger("oos.spike.runner")
 
 # ----------------------------------------------------------------------------- process control
 if IS_WINDOWS:
@@ -89,6 +91,13 @@ class ProcessTree:
         the Job Object dies with OOS (KILL_ON_JOB_CLOSE)."""
         return {"pid": pid, "pgid": None if IS_WINDOWS else pid}
 
+    def close(self) -> None:
+        """Release this process's handle to the tree. Windows: closing the last Job Object handle
+        kills the tree (KILL_ON_JOB_CLOSE), which is what an OOS crash does. POSIX: nothing to release."""
+        if IS_WINDOWS and self.job:
+            _k32.CloseHandle(self.job)
+            self.job = None
+
     def kill_tree(self, pid: int) -> None:
         if IS_WINDOWS:
             _k32.TerminateJobObject(self.job, 1)
@@ -101,6 +110,9 @@ class ProcessTree:
                 os.killpg(pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
+            except PermissionError as e:
+                # The group id now belongs to another user's processes: not ours to kill.
+                log.warning("kill_tree: no permission to kill process group %s: %s", pid, e)
 
 
 def pid_alive(pid: int) -> bool:
@@ -123,10 +135,12 @@ def pid_alive(pid: int) -> bool:
         return True
 
 
-def kill_recorded_tree(rec: dict) -> None:
+def kill_recorded_tree(rec: dict) -> str | None:
     """Recovery: kill what is left of a recorded tree. POSIX: signal the recorded process group even
     if its leader is gone, because descendants outlive it in the group (ADR-0008, EXECUTION_RUNTIME
-    §4/§5.1). Without a recorded group, fall back to the pid."""
+    §4/§5.1). Without a recorded group, fall back to the pid. Returns an error note, or None.
+    A PermissionError (the recorded group id was recycled by another user) is logged and returned,
+    never raised, so recovery of the other tasks goes on."""
     pgid = rec.get("pgid")
     if pgid and not IS_WINDOWS:
         import signal
@@ -134,8 +148,12 @@ def kill_recorded_tree(rec: dict) -> None:
             os.killpg(pgid, signal.SIGKILL)
         except ProcessLookupError:
             pass
+        except PermissionError as e:
+            log.warning("recovery: no permission to kill recorded process group %s: %s", pgid, e)
+            return f"PermissionError: {e}"
     elif pid_alive(rec["pid"]):
         force_kill_pid_tree(rec["pid"])
+    return None
 
 
 def force_kill_pid_tree(pid: int) -> None:
@@ -198,9 +216,11 @@ def recover(path: Path, task_ids: list[str]) -> dict:
     for t, s in state.items():
         if s["status"] == "running":
             alive = pid_alive(s["pid"])
-            kill_recorded_tree(s)
+            kill_error = kill_recorded_tree(s)
             s = {**s, "status": "interrupted", "orphan_was_alive": alive,
                  "action": "re-dispatch same idempotency key after workspace check"}
+            if kill_error:
+                s["kill_error"] = kill_error
         elif s["status"] == "intent":
             s = {**s, "status": "never_started", "action": "dispatch"}
         elif s["status"] == "pending":

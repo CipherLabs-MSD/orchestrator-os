@@ -12,6 +12,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parent.parent
 SPIKE = ROOT / "spikes" / "oos-0002"
@@ -48,6 +49,12 @@ class PythonRuntimeEvidence(unittest.TestCase):
     def test_orchestrator_crash_leaves_no_orphans_when_tree_is_owned(self):
         r = pr.e4_orchestrator_crash()
         self.assertEqual(r["job"], {"worker": False, "grandchild": False})
+        if pr.IS_WINDOWS:
+            # On Windows the Job Object (KILL_ON_JOB_CLOSE) must kill the tree at the crash itself,
+            # before recovery runs: `job` alone would also pass if recover()'s taskkill did the work.
+            # On POSIX a process group outlives the crash until recovery kills it (ADR-0008), so
+            # job_before_recovery is reported there, not asserted.
+            self.assertEqual(r["job_before_recovery"], {"worker": False, "grandchild": False})
 
     def test_recovery_after_crash_runs_every_task_exactly_once(self):
         r = pr.e5_recovery()
@@ -108,6 +115,12 @@ class RecoveryKillsRecordedTrees(unittest.TestCase):
             p.wait(timeout=30)
             try:
                 self.assertTrue(pr.pid_alive(gc), "precondition: the grandchild outlives the worker")
+                # Simulate the OOS crash for this test's own tree before recovering. On Windows this
+                # test process holds the Job Object handle; in a real crash that handle dies with OOS
+                # and KILL_ON_JOB_CLOSE kills the tree. Keeping it open would leave the tree alive
+                # because of the test itself, a state no crash produces. On POSIX close() does nothing
+                # and the group lives on until recover() kills it.
+                tree.close()
                 report = pr.recover(jp, ["R"])
                 self.assertEqual(report["tasks"]["R"]["status"], "interrupted")
                 deadline = time.monotonic() + 5
@@ -117,6 +130,46 @@ class RecoveryKillsRecordedTrees(unittest.TestCase):
             finally:
                 pr.force_kill_pid_tree(gc)
                 p.stdout.close()
+
+
+@unittest.skipIf(pr.IS_WINDOWS, "process-group kills (os.killpg) exist only on POSIX")
+class KillPermissionErrors(unittest.TestCase):
+    """A recorded group id recycled by another user's processes gives PermissionError. It is
+    logged and recovery goes on with the other tasks (OOS-0023 review, F4)."""
+
+    def test_recovery_continues_after_permission_error(self):
+        killed = []
+
+        def fake_killpg(pgid, sig):
+            if pgid == 111111:
+                raise PermissionError(1, "Operation not permitted")
+            killed.append(pgid)
+
+        with tempfile.TemporaryDirectory() as d:
+            jp = Path(d) / "run.journal.jsonl"
+            j = pr.Journal(jp)
+            for t, pgid in (("P", 111111), ("Q", 222222)):
+                j.append(event="dispatch_intent", task_id=t, attempt=1, idempotency_key=f"{t}:1")
+                j.append(event="spawned", task_id=t, attempt=1, pid=pgid, pgid=pgid)
+            with mock.patch.object(pr.os, "killpg", fake_killpg), \
+                    mock.patch.object(pr, "pid_alive", return_value=False), \
+                    self.assertLogs("oos.spike.runner", "WARNING") as logs:
+                report = pr.recover(jp, ["P", "Q"])
+        self.assertEqual(report["tasks"]["P"]["status"], "interrupted")
+        self.assertIn("PermissionError", report["tasks"]["P"]["kill_error"])
+        self.assertEqual(report["tasks"]["Q"]["status"], "interrupted")
+        self.assertNotIn("kill_error", report["tasks"]["Q"])
+        self.assertEqual(killed, [222222])
+        self.assertIn("111111", logs.output[0])
+
+    def test_kill_tree_logs_permission_error(self):
+        def denied(pgid, sig):
+            raise PermissionError(1, "Operation not permitted")
+
+        with mock.patch.object(pr.os, "killpg", denied), \
+                self.assertLogs("oos.spike.runner", "WARNING") as logs:
+            pr.ProcessTree().kill_tree(333333)
+        self.assertIn("333333", logs.output[0])
 
 
 @unittest.skipUnless(os.environ.get("OOS_SPIKE_NODE") and Path(os.environ["OOS_SPIKE_NODE"]).exists(),
