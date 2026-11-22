@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 import unittest
 from pathlib import Path
@@ -84,6 +85,38 @@ class ProcessTreeKill(unittest.TestCase):
         finally:
             pr.force_kill_pid_tree(gc)
             p.stdout.close()
+
+
+class RecoveryKillsRecordedTrees(unittest.TestCase):
+    def test_recovery_kills_recorded_group_after_its_leader_exited(self):
+        # EXECUTION_RUNTIME §4/§5.1 and ADR-0008: after an OOS crash, recovery kills the surviving
+        # recorded tree of every interrupted task, from the journal alone. The leader may already be
+        # gone while a descendant lives on in its group (OOS-0023).
+        tree = pr.ProcessTree()
+        p = subprocess.Popen([sys.executable, str(pr.PROVIDER)], stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, text=True, encoding="utf-8", **tree.spawn_kwargs())
+        tree.adopt(p.pid)
+        with tempfile.TemporaryDirectory() as d:
+            jp = Path(d) / "run.journal.jsonl"
+            j = pr.Journal(jp)
+            j.append(event="dispatch_intent", task_id="R", attempt=1, idempotency_key="R:1")
+            j.append(event="spawned", task_id="R", attempt=1, **tree.record(p.pid))
+            p.stdin.write(json.dumps({"task_id": "R", "behavior": "leave_grandchild", "duration_s": 0.1}) + "\n")
+            p.stdin.flush()
+            gc = next(json.loads(line)["pid"] for line in p.stdout if '"grandchild"' in line)
+            p.stdin.close()
+            p.wait(timeout=30)
+            try:
+                self.assertTrue(pr.pid_alive(gc), "precondition: the grandchild outlives the worker")
+                report = pr.recover(jp, ["R"])
+                self.assertEqual(report["tasks"]["R"]["status"], "interrupted")
+                deadline = time.monotonic() + 5
+                while pr.pid_alive(gc) and time.monotonic() < deadline:
+                    time.sleep(0.05)
+                self.assertFalse(pr.pid_alive(gc))
+            finally:
+                pr.force_kill_pid_tree(gc)
+                p.stdout.close()
 
 
 @unittest.skipUnless(os.environ.get("OOS_SPIKE_NODE") and Path(os.environ["OOS_SPIKE_NODE"]).exists(),

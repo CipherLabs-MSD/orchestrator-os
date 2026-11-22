@@ -82,6 +82,13 @@ class ProcessTree:
                 raise OSError(ctypes.get_last_error(), "AssignProcessToJobObject failed")
             _k32.CloseHandle(h)
 
+    @staticmethod
+    def record(pid: int) -> dict:
+        """What the journal keeps about an owned tree, so recovery can kill it after an OOS crash.
+        POSIX: the process-group id (start_new_session makes it the worker's pid). Windows: no group;
+        the Job Object dies with OOS (KILL_ON_JOB_CLOSE)."""
+        return {"pid": pid, "pgid": None if IS_WINDOWS else pid}
+
     def kill_tree(self, pid: int) -> None:
         if IS_WINDOWS:
             _k32.TerminateJobObject(self.job, 1)
@@ -114,6 +121,21 @@ def pid_alive(pid: int) -> bool:
         return False
     except PermissionError:
         return True
+
+
+def kill_recorded_tree(rec: dict) -> None:
+    """Recovery: kill what is left of a recorded tree. POSIX: signal the recorded process group even
+    if its leader is gone, because descendants outlive it in the group (ADR-0008, EXECUTION_RUNTIME
+    §4/§5.1). Without a recorded group, fall back to the pid."""
+    pgid = rec.get("pgid")
+    if pgid and not IS_WINDOWS:
+        import signal
+        try:
+            os.killpg(pgid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    elif pid_alive(rec["pid"]):
+        force_kill_pid_tree(rec["pid"])
 
 
 def force_kill_pid_tree(pid: int) -> None:
@@ -169,15 +191,14 @@ def recover(path: Path, task_ids: list[str]) -> dict:
         if r["event"] == "dispatch_intent":
             state[t].update(status="intent", attempt=r["attempt"], key=r["idempotency_key"])
         elif r["event"] == "spawned":
-            state[t].update(status="running", pid=r["pid"])
+            state[t].update(status="running", pid=r["pid"], pgid=r.get("pgid"))
         elif r["event"] == "terminal":
             state[t].update(status=r["status"], retryable=r.get("retryable"))
     out = {"torn_lines": torn, "tasks": {}}
     for t, s in state.items():
         if s["status"] == "running":
             alive = pid_alive(s["pid"])
-            if alive:
-                force_kill_pid_tree(s["pid"])
+            kill_recorded_tree(s)
             s = {**s, "status": "interrupted", "orphan_was_alive": alive,
                  "action": "re-dispatch same idempotency key after workspace check"}
         elif s["status"] == "intent":
@@ -215,7 +236,7 @@ async def run_worker(spec: dict, *, timeout_s: float, cancel_after_s: float | No
         stderr=asyncio.subprocess.PIPE, cwd=cwd, **tree.spawn_kwargs())
     tree.adopt(proc.pid)  # before the request is sent, so grandchildren are born inside the job
     if journal:
-        journal.append(event="spawned", task_id=task_id, pid=proc.pid, attempt=attempt)
+        journal.append(event="spawned", task_id=task_id, attempt=attempt, **tree.record(proc.pid))
     proc.stdin.write((json.dumps(spec) + "\n").encode())
     await proc.stdin.drain()
 
@@ -362,18 +383,30 @@ def _wait_for_grandchild(p: subprocess.Popen) -> int:
 
 
 def e4_orchestrator_crash() -> dict:
-    """The OOS process itself dies (os._exit). Do its workers become orphans?"""
+    """The OOS process itself dies (os._exit). Do its workers become orphans?
+
+    "no-job": no tree ownership, no recovery (the baseline). "job": an owned tree, then the restart
+    does what OOS does on start (EXECUTION_RUNTIME §4): recover() from the journal, which kills the
+    surviving recorded tree. `job_before_recovery` is the state right after the crash: on Windows the
+    Job Object has already killed the tree; on POSIX a process group lives on until recovery."""
     out = {}
     for mode in ("no-job", "job"):
         with tempfile.TemporaryDirectory() as d:
             pidfile = Path(d) / "pids.json"
+            journal = Path(d) / "run.journal.jsonl"
             # No pipes to the crash-child: inherited pipe handles would make us wait for the grandchild.
             t = time.perf_counter()
-            subprocess.Popen([sys.executable, __file__, "crash-child", mode, str(pidfile)],
+            subprocess.Popen([sys.executable, __file__, "crash-child", mode, str(pidfile), str(journal)],
                              stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).wait()
             out[mode + "_parent_exit_s"] = round(time.perf_counter() - t, 2)
             time.sleep(0.5)
             pids = json.loads(pidfile.read_text())
+            if mode == "job":
+                out["job_before_recovery"] = {k: pid_alive(v) for k, v in pids.items()}
+                out["job_recovery"] = recover(journal, ["orphan-test"])["tasks"]["orphan-test"]["status"]
+                deadline = time.monotonic() + 5  # killed orphans are reaped by init/launchd, not by us
+                while any(pid_alive(v) for v in pids.values()) and time.monotonic() < deadline:
+                    time.sleep(0.05)
             alive = {k: pid_alive(v) for k, v in pids.items()}
             out[mode] = alive
             for v in pids.values():
@@ -382,12 +415,16 @@ def e4_orchestrator_crash() -> dict:
     return out
 
 
-def _crash_child(mode: str, pidfile: str) -> None:
+def _crash_child(mode: str, pidfile: str, journal_path: str) -> None:
     tree = ProcessTree() if mode == "job" else None
+    if tree:
+        j = Journal(Path(journal_path))
+        j.append(event="dispatch_intent", task_id="orphan-test", attempt=1, idempotency_key="orphan-test:1")
     p = subprocess.Popen([sys.executable, str(PROVIDER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
                          **(tree.spawn_kwargs() if tree else {}))
     if tree:
         tree.adopt(p.pid)
+        j.append(event="spawned", task_id="orphan-test", attempt=1, **tree.record(p.pid))
     p.stdin.write(json.dumps({"task_id": "orphan-test", "behavior": "spawn_grandchild"}) + "\n")
     p.stdin.flush()
     gc = _wait_for_grandchild(p)
@@ -506,7 +543,7 @@ EXPERIMENTS = {"e1": e1_spawn_latency, "e2": e2_concurrency, "e3": e3_tree_kill,
 
 def main(argv: list[str]) -> int:
     if argv[:1] == ["crash-child"]:
-        _crash_child(argv[1], argv[2])
+        _crash_child(argv[1], argv[2], argv[3])
         return 0
     if argv[:1] == ["journal-run"]:
         _journal_run(argv[1], int(argv[2]))
