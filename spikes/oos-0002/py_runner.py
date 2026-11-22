@@ -87,8 +87,11 @@ class ProcessTree:
             _k32.TerminateJobObject(self.job, 1)
         else:
             import signal
+            # start_new_session made the worker a group leader, so the group id IS its pid. Do not
+            # look it up with os.getpgid(pid): once the worker has been reaped that raises
+            # ProcessLookupError, while descendants still live in the group (found on macOS, OOS-0023).
             try:
-                os.killpg(os.getpgid(pid), signal.SIGKILL)
+                os.killpg(pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
 
@@ -188,6 +191,16 @@ def recover(path: Path, task_ids: list[str]) -> dict:
 
 
 # ----------------------------------------------------------------------------- worker supervision
+async def worker_exited(proc: asyncio.subprocess.Process, poll_s: float = 0.02) -> int:
+    """Return once the worker process itself has exited. Not proc.wait(): a wait() that starts
+    before the exit is only woken when every pipe has closed (asyncio base_subprocess
+    _call_connection_lost), so a descendant holding the inherited stdout keeps it waiting until
+    the timeout (found on macOS, OOS-0023)."""
+    while proc.returncode is None:
+        await asyncio.sleep(poll_s)
+    return proc.returncode
+
+
 async def run_worker(spec: dict, *, timeout_s: float, cancel_after_s: float | None = None,
                      grace_s: float = 0.5, journal: Journal | None = None, cwd: str | None = None,
                      attempt: int = 1, key: str | None = None) -> dict:
@@ -225,7 +238,7 @@ async def run_worker(spec: dict, *, timeout_s: float, cancel_after_s: float | No
         proc.stdin.write(b'{"type": "cancel"}\n')
         await proc.stdin.drain()
         try:
-            await asyncio.wait_for(proc.wait(), grace_s)
+            await asyncio.wait_for(worker_exited(proc), grace_s)
         except asyncio.TimeoutError:
             outcome = "cancel_forced"
             tree.kill_tree(proc.pid)
@@ -233,7 +246,7 @@ async def run_worker(spec: dict, *, timeout_s: float, cancel_after_s: float | No
     pump_task = asyncio.create_task(pump())
     cancel_task = asyncio.create_task(canceller()) if cancel_after_s is not None else None
     try:
-        await asyncio.wait_for(proc.wait(), timeout_s)
+        await asyncio.wait_for(worker_exited(proc), timeout_s)
     except asyncio.TimeoutError:
         outcome = "timed_out"
         tree.kill_tree(proc.pid)

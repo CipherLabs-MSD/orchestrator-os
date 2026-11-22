@@ -1,3 +1,13 @@
+# OOS-0023 runtime spike on macOS: setUpClass timeout · 2026-11-22
+
+- Task: the full suite has failed since 2026-10-29 with `PythonRuntimeEvidence.setUpClass` TimeoutError. First run of the OOS-0002 POSIX paths on macOS (15, arm64, Python 3.14.6); until now the spike had run on Windows only.
+- Root cause 1: POSIX `ProcessTree.kill_tree` used `os.killpg(os.getpgid(pid), ...)`. The terminal-state reap in `run_worker` calls it after the worker has been reaped, so `getpgid` raised `ProcessLookupError` (swallowed) and the leaked grandchild, holding the inherited stdout, was never killed; `wait_for(pump_task, 5)` then timed out in setUpClass. Fix: `os.killpg(pid, ...)` (the worker is a group leader through `start_new_session`). New test `ProcessTreeKill.test_tree_kill_after_worker_exit_reaches_descendants`.
+- Root cause 2, unmasked by fix 1: `asyncio` `Process.wait()` started before the exit is only woken when every pipe has closed (`base_subprocess._call_connection_lost`), so H-leaves-grandchild ran into its 4 s timeout and was classified `timed_out`. Fix: `worker_exited()` polls `proc.returncode`. Covered by the existing E2 tests. The Windows run used Python 3.10.6; whether Windows on Python >= 3.12 has the same wait() behaviour is unverified.
+- Planted faults: each old line put back alone fails the suite (old getpgid line: setUpClass error + the new test fails; old wait(): 3 failures in PythonRuntimeEvidence).
+- Still failing on macOS, not changed: `test_orchestrator_crash_leaves_no_orphans_when_tree_is_owned` (E4): `{'worker': True, 'grandchild': True}`. A POSIX process group has no `KILL_ON_JOB_CLOSE`; ADR-0008 ("Unresolved risks") already says macOS orphan cleanup after an OOS crash relies on recovery killing recorded groups, to be tested in OOS-0008. The test asserts the Windows Job Object result; changing it is a decision, not a fix.
+- Verification: `python3 tools/validate.py` 15/15; full suite `Ran 42 tests … FAILED (failures=1, skipped=1)` (E4; Node skipped, OOS_SPIKE_NODE unset). Before: `Ran 33 tests … FAILED (errors=1, skipped=1)`. No validator or policy change, so mutation not run. Prepublish run before push.
+- Next: owner/maintainer decision on E4 (see the PR); then the suite can go green and OOS-0022 (PR #4) can be updated from main.
+
 # OOS-0021 HFT + AI intake · 2026-10-29
 
 - Accounted for 71/71 owner-supplied hits (30/11/30): 46 new NEW candidates, 1 existing (YieldYatra DISC-131), 7 fork duplicates grouped with parents, 8 rejected hits (7 spam-like Bitfinex forks plus personal profile), 9 PARKED evidence holds. Added 55 rows DISC-342–396 including holds; next DISC-397. All 341 prior rows preserved byte-for-byte, including concurrent algo-strategies batch. No existing rows changed.

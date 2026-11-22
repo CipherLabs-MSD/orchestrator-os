@@ -42,5 +42,5 @@ It also runs the Node experiments when `OOS_SPIKE_NODE` points to a Node binary.
 | Platform | Status |
 |---|---|
 | Windows 11 (build 26200), Python 3.10.6, Node 22.9.0 | **tested**, see `results/win32-2026-10-01.json` |
-| macOS | **unverified**. POSIX code paths (process groups, `killpg`) exist but have **not** run on macOS. Run the tests there to validate them. |
+| macOS (15, arm64), Python 3.14 | **partly tested** (OOS-0023, 2026-11-22). Two POSIX bugs found and fixed: `kill_tree` looked up the group with `os.getpgid` of an already reaped worker (`ProcessLookupError`, nothing killed), and `proc.wait()` waited for every pipe to close, so a leaked grandchild holding stdout looked like a hang. E2, E3, E5, E6 pass. **E4 fails, as ADR-0008 predicted**: a process group does not die with the OOS process, so after an OOS crash the worker and grandchild survive. The no-orphan property on macOS is still open (OOS-0008). |
 | Linux | **unverified**, same POSIX paths |

@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 import unittest
 from pathlib import Path
 
@@ -57,6 +58,32 @@ class PythonRuntimeEvidence(unittest.TestCase):
     def test_paths_with_spaces_and_non_ascii(self):
         r = pr.e6_paths_and_signals()
         self.assertTrue(r["utf8_unicode_file_created_correctly"])
+
+
+class ProcessTreeKill(unittest.TestCase):
+    def test_tree_kill_after_worker_exit_reaches_descendants(self):
+        # The terminal-state reap in run_worker calls kill_tree after the worker itself has exited
+        # and been reaped. The kill must still reach what it left behind (OOS-0023: on POSIX,
+        # os.getpgid of the reaped worker raised ProcessLookupError and nothing was killed).
+        tree = pr.ProcessTree()
+        p = subprocess.Popen([sys.executable, str(pr.PROVIDER)], stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, text=True, encoding="utf-8", **tree.spawn_kwargs())
+        tree.adopt(p.pid)
+        p.stdin.write(json.dumps({"task_id": "reap", "behavior": "leave_grandchild", "duration_s": 0.1}) + "\n")
+        p.stdin.flush()
+        gc = next(json.loads(line)["pid"] for line in p.stdout if '"grandchild"' in line)
+        p.stdin.close()
+        p.wait(timeout=30)
+        try:
+            self.assertTrue(pr.pid_alive(gc), "precondition: the grandchild outlives the worker")
+            tree.kill_tree(p.pid)
+            deadline = time.monotonic() + 5
+            while pr.pid_alive(gc) and time.monotonic() < deadline:
+                time.sleep(0.05)
+            self.assertFalse(pr.pid_alive(gc))
+        finally:
+            pr.force_kill_pid_tree(gc)
+            p.stdout.close()
 
 
 @unittest.skipUnless(os.environ.get("OOS_SPIKE_NODE") and Path(os.environ["OOS_SPIKE_NODE"]).exists(),
