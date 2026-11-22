@@ -19,6 +19,7 @@ SW_ROUTE = "domains/software-development/context_routing.json"
 FIN = "domains/finance/domain.json"
 PROFILE = "orchestration/profiles/software-development.json"
 KPOL = "orchestration/kernel/decision_policy.json"
+OWNER = "orchestration/owner_policy.json"
 
 
 def jedit(root, rel, fn):
@@ -60,6 +61,11 @@ MUTATIONS = {
     "unlabelled spike source": lambda r: (r / "spikes/oos-0002/extra.py").write_text("print('x')\n", encoding="utf-8"),
     "kernel references spike code": lambda r: jedit(r, KPOL, lambda d: d.__setitem__("note", "see spikes/oos-0002 runner")),
     "backlog cycle": lambda r: jedit(r, "project/backlog.json", lambda d: d["items"][1]["depends_on"].append("OOS-0019")),
+    "agent merge without Billy's approval": lambda r: jedit(r, OWNER, lambda d: d["integration_authority"]["agent_merge_conditions"].remove("billy_approved_this_change_and_the_approval_is_recorded_with_the_work")),
+    "agent merge without independent review": lambda r: jedit(r, OWNER, lambda d: d["integration_authority"]["agent_merge_conditions"].remove("a_different_agent_reviewed_it_to_pass")),
+    "agent merge covers money": lambda r: jedit(r, OWNER, lambda d: d["integration_authority"]["agent_merge_never_covers"].remove("real_money")),
+    "agent merge authority with Billy-only merge": lambda r: jedit(r, OWNER, lambda d: d["integration_authority"].__setitem__("merge_to_protected_canonical", "billy_only")),
+    "agent merge kernel default not billy": lambda r: jedit(r, KPOL, lambda d: d["integration_authority"].__setitem__("default", "orchestrator")),
 }
 
 
